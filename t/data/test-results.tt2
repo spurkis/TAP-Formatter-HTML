@@ -1,0 +1,42 @@
+<html>
+	<head>
+		<title>[% report.title || 'Test Report' %]</title>
+	</head>
+	<body>
+		<div id="summary">
+			<pre>
+				status: [% IF report.has_errors %]<span class="fail">FAIL</span>[% ELSE %]<span class="pass">PASS</span>[% END %]
+				total: [% report.total %]
+				elapsed time: [% report.elapsed_time %]
+
+				total: [% report.total %] 
+				has_errors: [% report.has_errors %]
+				has_problems: [% report.has_problems %]
+				failed: [% report.failed %]
+				parse_errors: [% report.parse_errors %]
+				passed: [% report.passed %]
+				skipped: [% report.skipped %]
+				todo: [% report.todo %]
+				todo_passed: [% report.todo_passed %]
+				wait: [% report.wait %]
+				exit: [% report.exit %]
+			</pre>
+		</div>
+
+		<div id="detail">
+			Detail:
+			[% FOREACH test IN report.tests %]
+			<div id="[% test.test %]" class="test">[% test.test %]
+				[% FOREACH result IN test.results %]
+				<div class="[% result.type %]">[% result.raw %]</div>
+				[% END %]
+			</div>
+			[% END %]
+		</div>
+
+[ % PERL %]
+use Data::Dumper;
+print "report: " . Dumper( $stash->get( 'report' ) );
+[ % END %]
+</body>
+</html>
