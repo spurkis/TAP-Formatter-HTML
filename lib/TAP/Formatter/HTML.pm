@@ -62,7 +62,7 @@ sub silent       { shift->verbosity <= -3 }
 sub prepare {
     my ($self, @tests) = @_;
     # warn ref($self) . "->prepare called with args:\n" . Dumper( \@tests );
-    print STDERR 'running ' . scalar @tests . " tests\n";
+    $self->log( 'running ', scalar @tests, ' tests' );
     $self->sessions([])->tests( [@tests] );
 }
 
@@ -89,47 +89,66 @@ sub open_test {
 sub summary {
     my ($self, $aggregate) = @_;
     #warn ref($self) . "->summary called with args: " . Dumper( [$aggregate] );
-    $self->generate_report( $aggregate );
+
+    # farmed out to make sub-classing easy:
+    my $report = $self->prepare_report( $aggregate );
+    my $html   = $self->generate_report( $report );
+
+    return $html;
 }
 
 sub generate_report {
+    my ($self, $r) = @_;
+    return $self->template->process( $self->template_file, { report => $r } )
+      || die $self->template->error;
+}
+
+sub prepare_report {
     my ($self, $a) = @_;
 
-    my $report = {
-		  tests => [],
-		  start_time => '?',
-		  end_time => '?',
-		  elapsed_time => $a->elapsed_timestr,
-		 };
+    my $r = {
+	     tests => [],
+	     start_time => '?',
+	     end_time => '?',
+	     elapsed_time => $a->elapsed_timestr,
+	    };
 
     # add aggregate test info:
     for my $key (qw(
-		     total
-		     has_errors
-		     has_problems
-		     failed
-		     parse_errors
-		     passed
-		     skipped
-		     todo
-		     todo_passed
-		     wait
-		     exit
+		    total
+		    has_errors
+		    has_problems
+		    failed
+		    parse_errors
+		    passed
+		    skipped
+		    todo
+		    todo_passed
+		    wait
+		    exit
 		   )) {
-	$report->{$key} = $a->$key;
+	$r->{$key} = $a->$key;
     }
+
+    # do some other handy calcs:
+    $r->{percent_passed} = sprintf('%.1f', $r->{passed} / $r->{total} * 100);
+
+    # TODO: coverage?
 
     # add test results:
     foreach my $s (@{ $self->sessions }) {
-	push @{$report->{tests}}, $s->as_report;
+	push @{$r->{tests}}, $s->as_report;
     }
 
-    # TODO: process the template here
-    my $html = $self->template->process( $self->template_file, { report => $report } )
-      || die $self->template->error;
+    # this is close enough:
+    $r->{num_files} = scalar @{ $self->sessions };
 
-    print $html;
-    #print "report: " . Dumper( $report );
+    return $r;
+}
+
+sub log {
+    my ($self, @args) = @_;
+    print STDERR '# ', @args, "\n";
 }
 
 
@@ -157,7 +176,7 @@ sub _initialize {
 	$self->$arg($args->{$arg}) if defined $args->{$arg};
     }
 
-    print STDERR $self->test, ":\n";
+    $self->log( $self->test, ':' );
 
     return $self;
 }
@@ -166,7 +185,7 @@ sub _initialize {
 sub result {
     my ($self, $result) = @_;
     #warn ref($self) . "->result called with args: " . Dumper( $result );
-    print STDERR $result->as_string, "\n";
+    $self->log( $result->as_string );
     push @{ $self->results }, $result;
     return;
 }
@@ -182,10 +201,33 @@ sub close_test {
 
 sub as_report {
     my ($self) = @_;
-    return {
+    my $p = $self->parser;
+    my $r = {
 	    test => $self->test,
 	    results => $self->results,
 	   };
+
+    # add parser info:
+    for my $key (qw(
+		    tests_planned
+		    tests_run
+		    start_time
+		    end_time
+		    skip_all
+		    has_problems
+		    failed
+		    passed
+		   )) {
+	$r->{$key} = $p->$key;
+    }
+
+    $r->{parse_errors} = [ $p->parse_errors ];
+    return $r;
+}
+
+sub log {
+    my ($self, @args) = @_;
+    print STDERR '# ', @args, "\n";
 }
 
 1;

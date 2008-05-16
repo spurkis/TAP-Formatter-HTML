@@ -1,42 +1,167 @@
 <html>
 	<head>
 		<title>[% report.title || 'Test Report' %]</title>
+		<style type="text/css">
+/* TODO: move this to an external file */
+#summary {
+  ;
+}
+
+table.summary {
+  width: 75%;
+  border: 1px solid blue;
+}
+
+table.summary td.label {
+  width: 25%;
+}
+
+table.summary td.val {
+  width: 75%;
+}
+
+span.fail {
+  width: 100%;
+  color: white;
+  background-color: #cc0000;
+  font-style: italic;
+}
+
+span.pass {
+  width: 100%;
+  background-color: #66ffcc;
+  font-style: italic;
+}
+
+#detail {
+  margin-top: 5px;
+}
+
+div.test-run {
+  margin-top: 5px;
+  border-top: 1px dashed blue;
+}
+
+div.test-run div.test {
+  ;
+}
+
+div.test-run div.comment {
+  color: grey;
+}
+
+div.test-run div.plan {
+  color: blue;
+}
+
+div.test-run div.ok {
+  /* green-ish, prolly not necessary */
+  background-color: #eeffee;
+}
+
+div.test-run div.todo-ok {
+  color: #ee6666;
+}
+
+div.test-run div.todo-not-ok {
+  color: #770000;
+}
+
+div.test-run div.not-ok {
+  /* red-ish */
+  background-color: #ff9966;
+}
+
+div.test-run div.unknown {
+  color: red;
+}
+
+		</style>
 	</head>
 	<body>
 		<div id="summary">
-			<pre>
-				status: [% IF report.has_errors %]<span class="fail">FAIL</span>[% ELSE %]<span class="pass">PASS</span>[% END %]
-				total: [% report.total %]
-				elapsed time: [% report.elapsed_time %]
+			<span class="title">Summary:</span>
+			<table class="summary">
+				<tr><td class="label">result:</td><td class="val">[% IF report.has_errors %]<span class="fail">FAILED</span>[% ELSE %]<span class="pass">PASSED</span>[% END %]</td></tr>
+				<tr><td class="label"># files:</td><td class="val">[% report.num_files %]</td></tr>
+				<tr><td class="label">total # tests:</td><td class="val">[% report.total %]</td></tr>
+				<tr><td class="label">passed:</td><td class="val">[% report.failed %]/[% report.total %] ([% report.percent_passed %]%)</td></tr>
+				<tr><td class="label">elapsed time:</td><td class="val">[% report.elapsed_time %]</td></tr>
 
-				total: [% report.total %] 
-				has_errors: [% report.has_errors %]
-				has_problems: [% report.has_problems %]
-				failed: [% report.failed %]
-				parse_errors: [% report.parse_errors %]
-				passed: [% report.passed %]
-				skipped: [% report.skipped %]
-				todo: [% report.todo %]
-				todo_passed: [% report.todo_passed %]
-				wait: [% report.wait %]
-				exit: [% report.exit %]
-			</pre>
+<!--
+				<tr><td class="label">has errors:</td><td class="val">[% report.has_errors %]</td></tr>
+				<tr><td class="label">has problems:</td><td class="val">[% report.has_problems %]</td></tr>
+				<tr><td class="label">failed:</td><td class="val">[% report.failed %]</td></tr>
+				<tr><td class="label">parse errors:</td><td class="val">[% report.parse_errors %]</td></tr>
+				<tr><td class="label">passed:</td><td class="val">[% report.passed %]</td></tr>
+				<tr><td class="label">skipped:</td><td class="val">[% report.skipped %]</td></tr>
+				<tr><td class="label">todo:</td><td class="val">[% report.todo %]</td></tr>
+				<tr><td class="label">todo passed:</td><td class="val">[% report.todo_passed %]</td></tr>
+				<tr><td class="label">wait:</td><td class="val">[% report.wait %]</td></tr>
+				<tr><td class="label">exit:</td><td class="val">[% report.exit %]</td></tr>
+-->
+			</table>
 		</div>
 
+<!--
+<xmp>
+spurkis@lamb:~/dev/spurkis-svn/TAP-Formatter-HTML $ perl t/01_basic.t               
+ok 1 - use TAP::Formatter::HTML;
+t/data/01_pass...............ok   
+t/data/02_fail............... Dubious, test returned 3 (wstat 768, 0x300)
+ Failed 3/7 subtests 
+t/data/03_plan_fail.......... Dubious, test returned 255 (wstat 65280, 0xff00)
+ All 2 subtests passed 
+t/data/04_die_fail........... Dubious, test returned 255 (wstat 65280, 0xff00)
+ All 2 subtests passed 
+t/data/05_compile_fail....... Dubious, test returned 255 (wstat 65280, 0xff00)
+ No subtests run 
+
+Test Summary Report
+-------------------
+t/data/02_fail.pl        (Wstat: 768 Tests: 7 Failed: 3)
+  Failed tests:  4-5, 7
+  Non-zero exit status: 3
+t/data/03_plan_fail.pl   (Wstat: 65280 Tests: 3 Failed: 1)
+  Failed test:  3
+  Non-zero exit status: 255
+  Parse errors: Bad plan.  You planned 2 tests but ran 3.
+t/data/04_die_fail.pl    (Wstat: 65280 Tests: 3 Failed: 1)
+  Failed test:  3
+  Non-zero exit status: 255
+  Parse errors: Bad plan.  You planned 2 tests but ran 3.
+t/data/05_compile_fail.pl (Wstat: 65280 Tests: 0 Failed: 0)
+  Non-zero exit status: 255
+  Parse errors: No plan found in TAP output
+Files=5, Tests=20,  1 wallclock secs ( 0.05 usr  0.04 sys +  0.27 cusr  0.08 csys =  0.44 CPU)
+Result: FAIL
+1..1
+</xmp>
+-->
+
 		<div id="detail">
-			Detail:
-			[% FOREACH test IN report.tests %]
-			<div id="[% test.test %]" class="test">[% test.test %]
-				[% FOREACH result IN test.results %]
-				<div class="[% result.type %]">[% result.raw %]</div>
-				[% END %]
+			<span class="title">Detail:</span>
+			[% FOREACH test IN report.tests -%]
+			<div id="[% test.test %]" class="test-run">
+				<span class="test-name">[% test.test %]</span>
+				[% FOREACH result IN test.results -%]
+				<div class="[% result.type -%]
+										[%- IF result.test_num %] test-num-[% result.test_num %][% END -%]
+                    [%- IF result.ok == 'ok' -%]
+										  [%- IF result.has_todo %] todo-ok[% ELSE %] ok[% END -%]
+										[%- ELSIF result.ok == 'not ok' -%]
+										  [%- IF result.has_todo %] todo-not-ok[% ELSE %] not-ok[% END -%]
+										[%- END %]">[% result.raw -%]</div>
+				[% END -%]
 			</div>
 			[% END %]
 		</div>
 
-[ % PERL %]
+		<xmp>
+[% PERL %]
 use Data::Dumper;
 print "report: " . Dumper( $stash->get( 'report' ) );
-[ % END %]
-</body>
+[% END %]
+		</xmp>
+	</body>
 </html>
