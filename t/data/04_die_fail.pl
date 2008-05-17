@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 2;
+use Test::More tests => 3;
 
 ok(1, 'im ok');
 is(1, 1, 'one is one');

@@ -266,6 +266,8 @@ sub as_report {
 	    else            { $s = 'very-low' }
 	    $r->{severity} = $s;
 	}
+    } elsif ($r->{skip_all}) {
+	$r->{percent_passed} = '';
     } else {
 	$r->{percent_passed} = 0;
 	$r->{severity} = 'very-high';
