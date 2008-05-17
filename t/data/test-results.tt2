@@ -10,15 +10,17 @@ html {
 
 body {
 	font-family: Helvetica, Verdana, Arial, Tahoma;
-	font-size: 14px;
+	font-size: small;
 	background-color: #efefef;
 }
 
 /* the summary section */
 #summary {
   position: relative;
-  padding: 2px 0 2px 0;
+  padding: 2px 0 2 0;
   width: 90%;
+  font-size: x-large;
+  text-align: center;
 }
 
 #summary.passed {
@@ -31,23 +33,25 @@ body {
   border: 1px solid #ff0000;
 }
 
-ul.summary {
+#summary a {
+  width: 100%;
+  display: block;
 	margin: 0;
 	padding: 0;
-  display: block;
-  clear: both;
+  text-decoration: none;
+  color: #000000;
 }
 
-ul.summary li {
-  display: inline;
-	margin: 0;
-  padding: 2px 10 2 10;
-	list-style: none;
-  text-align: justify;
+#summary a:hover {
+  text-decoration: none;
+  color: #6666aa;
 }
 
 
-/* the detail section */
+
+/******************************************************************************
+ * The report detail section
+ */
 #detail {
   margin-top: 5px;
   width: 90%;
@@ -63,14 +67,15 @@ table.detail {
 }
 
 table.detail th {
-  border-bottom: 1px solid #3333ee;
+  border-bottom: 2px solid #3333ee;
+  padding-top: 2px;
 }
 
 table.detail td {
   position: relative;
   top: 0px;
   left: 0px;
-  border-top: 1px solid #dddddd;
+  border-top: 1px solid #aaaaaa;
 }
 
 table.detail tfoot tr td {
@@ -177,7 +182,7 @@ ul.test-summary li a {
 }
 
 ul.test-summary li.ok {
-  border: 1px solid #99cc99;
+  border: 1px solid #66cc33;
   background-color: #99ff66;
 }
 
@@ -187,18 +192,18 @@ ul.test-summary li.todo-ok {
 }
 
 ul.test-summary li.skip-ok {
-  border: 1px solid #99cc33;
-  background-color: #99ff99;
+  border: 1px solid #66cc33;
+  background-color: #ddffbb;
 }
 
 ul.test-summary li.not-ok {
-  border: 1px solid #dd6633;
-  background-color: #dd8866;
+  border: 1px solid #ff6450;
+  background-color: #ff0000;
 }
 
 ul.test-summary li.todo-not-ok {
-  border: 1px solid #99cc66;
-  background-color: #66cc33;
+  border: 1px solid #99d999;
+  background-color: #99cc66;
 }
 
 /* test detail */
@@ -257,27 +262,30 @@ ul.test-out li.todo-ok {
 }
 
 ul.test-out li.todo-not-ok {
-  color: #ff3333;
+  color: #773322;
 }
 
 ul.test-out li.not-ok {
   color: #ff0000;
-  font-weight: bold;
 }
 
 ul.test-out li.unknown {
-  color: #ee9900;
+  color: #996600;
+  font-family: monospace;
+}
+
+ul.test-out li.exit-status {
+  color: #ff0000;
 }
 		</style>
 	</head>
 	<body>
 		[% IF report.has_errors %][% SET status = 'failed' %][% ELSE %][% SET status = 'passed' %][% END -%]
 		<div id="summary" class="[% status %]">
-			<ul class="summary">
-				<li>status: [% status FILTER upper %]</li>
-				<li>passed: [% report.passed %]/[% report.total %] tests ([% report.percent_passed %]% ok)</li>
-				<li>time: [% report.total_time | format('%.2fs') %]</li>
-			</ul>
+			<a href="#" title="Test Summary ([% report.percent_passed %]% ok)
+	passed [% report.passed %]/[% report.total %] tests in [% report.num_files %] files
+	total time: [% report.total_time | format('%.2fs') %]
+	[% report.elapsed_time %]">[% status FILTER upper %]</a>
 		</div>
 
 		<div id="detail">
@@ -308,7 +316,8 @@ ul.test-out li.unknown {
 [% END -%]
 [% IF test.todo_passed %]	some todo tests unexpectedly passed!
 [% END -%]
-	wait/exit status: [% test.wait %]/[% test.exit %]">[% test.test %]</a>
+	exit status: [% test.exit %]
+	wait status: [% test.wait %]">[% test.test %]</a>
 						</td>
 						<td class="results">
 							[%- SET max_tests = 0 -%]
@@ -338,10 +347,13 @@ ul.test-out li.unknown {
 								[%- END %]
 								<ul class="test-out">
 									[%- FOREACH result IN test.results %]
-									<li id="[% test.test _ '-' _ result.test_num %]"
+									<li [% IF test.is_test %]id="[% test.test _ '-' _ result.test_num %]"[% END -%]
 											class="[% result.type -%]
 														 [%- IF result.is_test %] test-num-[% result.test_num %][% ' ' _ result.test_status -%]
 														 [%- END %]">[% result.raw | html -%]</li>
+									[%- END -%]
+									[%- IF test.exit OR test.wait -%]
+									<li class="exit-status">exit status: [% test.exit %], wait status: [% test.wait %]</li>
 									[%- END %]
 								</ul>
 							</div>
@@ -362,8 +374,8 @@ ul.test-out li.unknown {
 							[% report.todo %] todo,
 							[% report.skipped %] skipped <br/>
 							[% report.parse_errors %] parse errors,
-							[% report.wait %] wait status,
-							[% report.exit %] exit status</td>
+							exit status: [% report.exit %],
+							wait status: [% report.wait %]</td>
 						<td class="time">[% report.total_time | format('%.2fs') %]</td>
 						<td class="percent">[% report.percent_passed %]%</td>
 					</tr>
@@ -371,7 +383,7 @@ ul.test-out li.unknown {
 			</table>
 		</div>
 
-		<p>[% report.elapsed_time %]</p>
+		<div class="elapsed_time">elapsed time: [% report.elapsed_time %]</div>
 
 		<xmp>
 [ % PERL %]

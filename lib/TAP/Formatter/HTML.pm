@@ -206,7 +206,7 @@ sub result {
     # set this to avoid the hassle of recalculating it in the template:
     if ($result->is_test) {
 	$result->{test_status}  = $result->has_todo ? 'todo-' : '';
-	$result->{test_status} .= $result->is_ok ? 'ok' : 'not-ok';
+	$result->{test_status} .= $result->is_actual_ok ? 'ok' : 'not-ok';
     }
 
     push @{ $self->results }, $result;
