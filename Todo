@@ -1,9 +1,6 @@
 wrap unknown's in <pre>
 percent col should have inner div's for formatting
-table-ify the status line
-
-why isn't % calcs producing >100% for more tests run scenarios?
-   not calculated on actual_passed?
+table-ify the test summaries
 
 split out css
 

@@ -138,8 +138,9 @@ sub prepare_report {
     }
 
     # do some other handy calcs:
+    $r->{actual_passed} = $r->{passed} + $r->{todo_passed};
     if ($r->{total}) {
-	$r->{percent_passed} = sprintf('%.1f', $r->{passed} / $r->{total} * 100);
+	$r->{percent_passed} = sprintf('%.1f', $r->{actual_passed} / $r->{total} * 100);
     } else {
 	$r->{percent_passed} = 0;
     }
@@ -176,7 +177,7 @@ use strict;
 use warnings;
 
 use base qw( TAP::Base );
-use accessors qw( test parser results closed );
+use accessors qw( test parser results meta closed );
 
 # DEBUG:
 use Data::Dumper 'Dumper';
@@ -187,7 +188,7 @@ sub _initialize {
     $args ||= {};
     $self->SUPER::_initialize($args);
 
-    $self->results([])->closed(0);
+    $self->results([])->meta({})->closed(0);
     foreach my $arg (qw( test parser )) {
 	$self->$arg($args->{$arg}) if defined $args->{$arg};
     }
@@ -203,11 +204,18 @@ sub result {
     #warn ref($self) . "->result called with args: " . Dumper( $result );
     $self->log( $result->as_string );
 
-    # set this to avoid the hassle of recalculating it in the template:
     if ($result->is_test) {
+	# set this to avoid the hassle of recalculating it in the template:
 	$result->{test_status}  = $result->has_todo ? 'todo-' : '';
+	$result->{test_status} .= $result->has_skip ? 'skip-' : '';
 	$result->{test_status} .= $result->is_actual_ok ? 'ok' : 'not-ok';
+
+	# keep track of passes (including unplanned!) for percent_passed calcs:
+	if ($result->is_ok || $result->is_unplanned && $result->is_actual_ok) {
+	    $self->meta->{passed_including_unplanned}++;
+	}
     }
+
 
     push @{ $self->results }, $result;
     return;
@@ -238,15 +246,18 @@ sub as_report {
 		    end_time
 		    skip_all
 		    has_problems
-		    failed
 		    passed
+		    failed
+		    todo_passed
+		    actual_passed
+		    actual_failed
 		    wait
 		    exit
 		   )) {
 	$r->{$key} = $p->$key;
     }
 
-    $r->{num_parse_errors} = $p->parse_errors;
+    $r->{num_parse_errors} = scalar $p->parse_errors;
     $r->{parse_errors} = [ $p->parse_errors ];
     $r->{passed_tests} = [ $p->passed ];
     $r->{failed_tests} = [ $p->failed ];
@@ -254,29 +265,44 @@ sub as_report {
     # do some other handy calcs:
     $r->{test_status} = $r->{has_problems} ? 'not-ok' : 'ok';
     $r->{elapsed_time} = $r->{end_time} - $r->{start_time};
+    $r->{severity} = '';
     if ($r->{tests_planned}) {
-	my $p = $r->{percent_passed} = sprintf('%.1f', $r->{passed} / $r->{tests_planned} * 100);
+	# Calculate percentage passed as # passes *including* unplanned passes
+	# so we can get > 100% -- this can be a good indicator as to why a test
+	# failed!
+	my $passed_incl_unplanned = $self->meta->{passed_including_unplanned} || 0;
+	my $p = $r->{percent_passed} = sprintf('%.1f', $passed_incl_unplanned / $r->{tests_planned} * 100);
 	if ($p != 100) {
-	    # nb: this also catches more tests passed than planned
 	    my $s;
 	    if ($p < 25)    { $s = 'very-high' }
 	    elsif ($p < 50) { $s = 'high' }
 	    elsif ($p < 75) { $s = 'med' }
 	    elsif ($p < 95) { $s = 'low' }
 	    else            { $s = 'very-low' }
+	    # classify >100% as very-low
 	    $r->{severity} = $s;
 	}
     } elsif ($r->{skip_all}) {
-	$r->{percent_passed} = '';
+	; # do nothing
     } else {
 	$r->{percent_passed} = 0;
 	$r->{severity} = 'very-high';
     }
 
-    if ($r->{num_parse_errors}) {
-	$r->{severity} = 'very-high';
+    if (my $num = $r->{num_parse_errors}) {
+	if ($num == 1 && ! $p->is_good_plan) {
+	    $r->{severity} ||= 'low'; # prefer value set calculating % passed
+	} else {
+	    $r->{severity} = 'very-high';
+	}
     }
 
+    # check for scripts that died abnormally:
+    if ($r->{exit} && $r->{exit} == 255 && $p->is_good_plan) {
+	$r->{severity} ||= 'very-high';
+    }
+
+    # catch-all:
     if ($r->{has_problems}) {
 	$r->{severity} ||= 'high';
     }

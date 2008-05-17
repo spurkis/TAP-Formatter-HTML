@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More 'no_plan';
+use Test::More tests => 7;
 
 ok(1, 'im ok');
 is(1, 1, 'one is one');
@@ -13,8 +13,8 @@ TODO: {
     like('abc', qr/c/, 'contains c?');
 }
 
-TODO_SKIP: {
-    skip 'to the loo', 2;
+TODO: {
+    todo_skip 'to the loo', 2;
     ok(2, 'youre ok');
     fail('dont run me');
 }

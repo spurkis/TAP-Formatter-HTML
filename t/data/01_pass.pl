@@ -18,3 +18,9 @@ SKIP: {
     ok(2, 'youre ok');
     fail('dont run me');
 }
+
+TODO: {
+    todo_skip 'to the loo again', 2;
+    ok(2, 'were ok');
+    fail('really dont run me');
+}

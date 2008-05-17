@@ -94,29 +94,34 @@ table.detail td.percent {
   font-size: small;
 }
 
+table.detail td.todo-passed {
+  border: 1px solid #99cc99;
+  background-color: #ddffbb;
+}
+
 table.detail td.severity-very-low {
-  border: 1px solid #dd6633;
-  background-color: #ccff99;
+  border: 1px solid #ffee33;
+  background-color: #ffffaa;
 }
 
 table.detail td.severity-low {
-  border: 1px solid #dd6633;
-  background-color: #ffff99;
+  border: 1px solid #eecc33;
+  background-color: #ffdd99;
 }
 
 table.detail td.severity-med {
   border: 1px solid #dd6633;
-  background-color: #ffcc33;
+  background-color: #ffaa77;
 }
 
 table.detail td.severity-high {
-  border: 1px solid #dd6633;
-  background-color: #dd8866;
+  border: 1px solid #ff3333;
+  background-color: #ff8866;
 }
 
 table.detail td.severity-very-high {
-  border: 1px solid #dd6633;
-  background-color: #bb6644;
+  border: 1px solid #ff0000;
+  background-color: #ff6450;
 }
 
 a.file {
@@ -192,18 +197,18 @@ ul.test-summary li.todo-ok {
 }
 
 ul.test-summary li.skip-ok {
-  border: 1px solid #66cc33;
-  background-color: #ddffbb;
+  border: 1px solid #99d999;
+  background-color: #99cc66;
 }
 
 ul.test-summary li.not-ok {
-  border: 1px solid #ff6450;
-  background-color: #ff0000;
+  border: 1px solid #ff0000;
+  background-color: #ff6450;
 }
 
 ul.test-summary li.todo-not-ok {
-  border: 1px solid #99d999;
-  background-color: #99cc66;
+  border: 1px solid #99cc99;
+  background-color: #ddffbb;
 }
 
 /* test detail */
@@ -267,6 +272,14 @@ ul.test-out li.todo-not-ok {
 
 ul.test-out li.not-ok {
   color: #ff0000;
+}
+
+ul.test-out li.unplanned {
+  color: #ff0000;
+}
+
+ul.test-out li.skip {
+  color: #001111;
 }
 
 ul.test-out li.unknown {
@@ -349,8 +362,8 @@ ul.test-out li.exit-status {
 									[%- FOREACH result IN test.results %]
 									<li [% IF test.is_test %]id="[% test.test _ '-' _ result.test_num %]"[% END -%]
 											class="[% result.type -%]
-														 [%- IF result.is_test %] test-num-[% result.test_num %][% ' ' _ result.test_status -%]
-														 [%- END %]">[% result.raw | html -%]</li>
+														 [%- IF result.is_test %][% ' ' _ result.test_status -%][%- END -%]
+														 [%- IF result.is_unplanned %] unplanned[% END %]">[% result.raw | html -%][% IF result.is_unplanned %]<em> (unplanned)</em>[% END %]</li>
 									[%- END -%]
 									[%- IF test.exit OR test.wait -%]
 									<li class="exit-status">exit status: [% test.exit %], wait status: [% test.wait %]</li>
@@ -359,7 +372,9 @@ ul.test-out li.exit-status {
 							</div>
 						</td>
 						<td class="time">[% test.elapsed_time | format('%.2fs') %]</td>
-						<td class="percent [%IF test.severity %][% 'severity-' _ test.severity %][% END %]">[% IF test.percent_passed %][% test.percent_passed %]%[% ELSE %]n/a[% END %]</td>
+						<td class="percent[%- IF test.severity %][% ' severity-' _ test.severity %][% END -%]
+											 [%- IF test.todo_passed %] todo-passed[% END %]">[% IF test.percent_passed -%]
+							[%- test.percent_passed %]%[% ELSE %]n/a[% END %]</td>
 					</tr>
 					[%- END %]
 				</tbody>
@@ -386,10 +401,10 @@ ul.test-out li.exit-status {
 		<div class="elapsed_time">elapsed time: [% report.elapsed_time %]</div>
 
 		<xmp>
-[ % PERL %]
+[% PERL %]
 use Data::Dumper;
 print "report: " . Dumper( $stash->get( 'report' ) );
-[ % END %]
+[% END %]
 		</xmp>
 	</body>
 </html>
