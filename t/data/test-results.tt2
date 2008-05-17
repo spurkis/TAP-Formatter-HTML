@@ -16,6 +16,8 @@ body {
 
 /* the summary section */
 #summary {
+  position: relative;
+  padding: 2px 0 2px 0;
   width: 75%;
 }
 
@@ -30,30 +32,16 @@ body {
 ul.summary {
 	margin: 0;
 	padding: 0;
+  display: block;
+  clear: both;
 }
 
 ul.summary li {
-	margin-left: 4px;
+  display: inline;
+	margin: 0;
+  padding: 2px 5 2 5;
 	list-style: none;
-}
-
-#status {
-  width: 75%;
-  font-weight: bold;
-  text-align: center;
-}
-
-table.summary {
-  width: 75%;
-  border: 1px solid #666666;
-}
-
-table.summary td.label {
-  width: 25%;
-}
-
-table.summary td.val {
-  width: 75%;
+  text-align: justify;
 }
 
 
@@ -64,27 +52,38 @@ table.summary td.val {
 
 table.detail {
   width: 75%;
-  border: 1px solid blue;
+  border: 1px solid #3333ee;
+  padding: 2px;
+/*  border-collapse: collapse; */
+  border-spacing: 0px;
+
+}
+
+table.detail th {
+  border-bottom: 1px solid #3333ee;
 }
 
 table.detail td {
-  border: 1px solid yellow;
-}
-
-table.detail tbody tr.test {
-  margin-top: 5px;
-  border-top: 1px dashed blue;
-}
-
-table.detail tbody tr td {
   position: relative;
   top: 0px;
   left: 0px;
+  border-top: 1px solid #dddddd;
+}
+
+table.detail tfoot tr td {
+  border-top: 1px solid #3333ee;
+}
+
+table.detail td.time {
+  text-align: center;
+  font-size: small;
 }
 
 table.detail td.percent {
   border: 1px solid #99cc99;
   background-color: #99ff66;
+  text-align: center;
+  font-size: small;
 }
 
 table.detail td.severity-very-high {
@@ -117,7 +116,19 @@ table.detail td.severity-very-high {
   background-color: #dd8866;
 }
 
+a.file {
+  display: block;
+  margin: 0;
+  padding: 0;
+  text-decoration: none;
+  width: 100%;
+  height: 100%;
+}
 
+a.file:hover {
+  text-decoration: none;
+  color: #6666ee;
+}
 
 div.detail {
   width: 75%;
@@ -201,6 +212,12 @@ ul.test-summary li.todo-not-ok {
   background-color: #66cc33;
 }
 
+/* test detail */
+div.test-detail {
+	margin: 0;
+	padding: 0;
+  display: none; /* by default */
+}
 
 /* parse errors */
 ul.parse-errors {
@@ -220,7 +237,6 @@ ul.test-out {
 	margin: 0;
 	padding: 0;
   clear: left;
-  display: none;
 }
 
 ul.test-out li {
@@ -270,9 +286,7 @@ ul.test-out li.unknown {
 		<div id="summary" class="[% status %]">
 			<ul class="summary">
 				<li>status: [% status FILTER upper %]</li>
-				<li>[% report.total %] tests</li>
-				<li>[% report.num_files %] files</li>
-				<li>passed: [% report.passed %]/[% report.total %] ([% report.percent_passed %]%)</li>
+				<li>passed: [% report.passed %]/[% report.total %] tests ([% report.percent_passed %]% ok)</li>
 				<li>[% report.elapsed_time %]</li>
 			</ul>
 		</div>
@@ -288,10 +302,10 @@ ul.test-out li.unknown {
 					</tr>
 				</thead>
 				<tbody>
-			[% FOREACH test IN report.tests -%]
-			<tr id="[% test.test %]" class="test-run [% test.test_status %]">
-				<td class="file">
-					<a href="#" title="Test overview:            
+					[% FOREACH test IN report.tests -%]
+					<tr id="[% test.test %]" class="test-run [% test.test_status %]">
+						<td class="file">
+							<a class="file" href="#" title="Test overview:            
 	[% test.tests_planned || 0 %] planned, [% test.tests_run || 0 %] run
 [% IF test.has_problems %]	has problems!
 [% END -%]
@@ -306,43 +320,45 @@ ul.test-out li.unknown {
 [% IF test.todo_passed %]	some todo tests unexpectedly passed!
 [% END -%]
 	wait/exit status: [% test.wait %]/[% test.exit %]">[% test.test %]</a>
-					</div>
-				</td>
-				<td class="results">
-					[% SET max_tests = 0 %]
-					[% SET max_tests = test.tests_planned IF test.tests_planned AND test.tests_planned > max_tests %]
-					[% SET max_tests = test.tests_run IF test.tests_run AND test.tests_run > max_tests %]
-					<ul class="test-summary">
-						[% IF test.tests_run AND test.tests_run > 0 %]
-						  [%- SET result_width = (95 / test.tests_run) -%]
-						  [% FOREACH result IN test.results -%]
-						    [%- IF result.is_test %]<li class="test [% result.test_status %]" style="width: [% result_width | format('%d') %]%"><a href="#[% test.test _ '-' _ result.test_num %]" title="[% result.raw | html %]">&nbsp;</a></li>[% END %]
-						  [% END %]
-						[% ELSIF test.skip_all %]
-						  <li class="skip-ok" style="width: 95%"><a href="#" title="[% result.first.raw | html %]">&nbsp;</a></li>
-						[% ELSE %]
-						  <li class="stub not-ok" style="width: 95%">&nbsp;</li>
-						[% END %]
-					</ul>
-					[% IF test.parse_errors -%]
-					<ul class="parse-errors">
-						[% FOREACH e IN test.parse_errors %]<li>Parse error: [% e %]</li>[% END -%]
-					</ul>
-					[% END -%]
-					<ul class="test-out">
-						[% FOREACH result IN test.results -%]
-						<li id="[% test.test _ '-' _ result.test_num %]"
-								class="[% result.type -%]
-											 [%- IF result.is_test %] test-num-[% result.test_num %][% ' ' _ result.test_status -%]
-											 [%- END %]">[% result.raw | html -%]</li>
-						[% END -%]
-					</ul>
-				</div>
-				<td class="time">[% test.elapsed_time | format('%.2fs') %]</td>
-				<td class="percent [%IF test.severity %][% 'severity-' _ test.severity %][% END %]">[% test.percent_passed %]%</td>
-			</tr>
-			[% END %]
+						</td>
+						<td class="results">
+							[% SET max_tests = 0 %]
+							[% SET max_tests = test.tests_planned IF test.tests_planned AND test.tests_planned > max_tests %]
+							[% SET max_tests = test.tests_run IF test.tests_run AND test.tests_run > max_tests %]
+							<ul class="test-summary">
+								[%- IF test.tests_run AND test.tests_run > 0 -%]
+								[%- SET result_width = (95 / test.tests_run) -%]
+								  [%- FOREACH result IN test.results -%]
+						        [% IF result.is_test %]<li class="test [% result.test_status %]" style="width: [% result_width | format('%d') %]%"><a href="#[% test.test _ '-' _ result.test_num %]" title="[% result.raw | html %]">&nbsp;</a></li>[% END %]
+								  [%- END -%]
+								[%- ELSIF test.skip_all -%]
+								<li class="skip-ok" style="width: 95%"><a href="#" title="[% result.first.raw | html %]">&nbsp;</a></li>
+								[%- ELSE -%]
+								<li class="stub not-ok" style="width: 95%">&nbsp;</li>
+								[%- END -%]
+							</ul>
+							<div class="test-detail">
+								[%- IF test.parse_errors -%]
+								<ul class="parse-errors">
+									[% FOREACH e IN test.parse_errors %]<li>Parse error: [% e %]</li>[% END -%]
+								</ul>
+								[%- END -%]
+								<ul class="test-out">
+									[%- FOREACH result IN test.results -%]
+									<li id="[% test.test _ '-' _ result.test_num %]"
+											class="[% result.type -%]
+														 [%- IF result.is_test %] test-num-[% result.test_num %][% ' ' _ result.test_status -%]
+														 [%- END %]">[% result.raw | html -%]</li>
+									[%- END -%]
+								</ul>
+							</div>
+						</td>
+						<td class="time">[% test.elapsed_time | format('%.2fs') %]</td>
+						<td class="percent [%IF test.severity %][% 'severity-' _ test.severity %][% END %]">[% test.percent_passed %]%</td>
+					</tr>
+					[%- END -%]
 				</tbody>
+	
 				<tfoot>
 					<tr>
 						<td class="file">[% report.num_files %] files</td>

@@ -149,8 +149,9 @@ sub prepare_report {
     # add test results:
     my $total_time = 0;
     foreach my $s (@{ $self->sessions }) {
-	push @{$r->{tests}}, $s->as_report;
-	$total_time += $s->{elapsed_time} || 0;
+	my $sr = $s->as_report;
+	push @{$r->{tests}}, $sr;
+	$total_time += $sr->{elapsed_time} || 0;
     }
     $r->{total_time} = $total_time;
 
