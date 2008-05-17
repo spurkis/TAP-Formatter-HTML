@@ -3,13 +3,49 @@
 		<title>[% report.title || 'Test Report' %]</title>
 		<style type="text/css">
 /* TODO: move this to an external file */
+html {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+	font-family: Helvetica, Verdana, Arial, Tahoma;
+	font-size: 14px;
+	background-color: #efefef;
+}
+
+/* the summary section */
 #summary {
-  ;
+  width: 75%;
+}
+
+#summary.passed {
+  background-color: #99ff66;
+}
+
+#summary.failed {
+  background-color: #ff9966;
+}
+
+ul.summary {
+	margin: 0;
+	padding: 0;
+}
+
+ul.summary li {
+	margin-left: 4px;
+	list-style: none;
+}
+
+#status {
+  width: 75%;
+  font-weight: bold;
+  text-align: center;
 }
 
 table.summary {
   width: 75%;
-  border: 1px solid blue;
+  border: 1px solid #666666;
 }
 
 table.summary td.label {
@@ -20,148 +56,317 @@ table.summary td.val {
   width: 75%;
 }
 
-span.fail {
-  width: 100%;
-  color: white;
-  background-color: #cc0000;
-  font-style: italic;
-}
 
-span.pass {
-  width: 100%;
-  background-color: #66ffcc;
-  font-style: italic;
-}
-
+/* the detail section */
 #detail {
   margin-top: 5px;
 }
 
-div.test-run {
+table.detail {
+  width: 75%;
+  border: 1px solid blue;
+}
+
+table.detail td {
+  border: 1px solid yellow;
+}
+
+table.detail tbody tr.test {
   margin-top: 5px;
   border-top: 1px dashed blue;
 }
 
-div.test-run div.test {
+table.detail tbody tr td {
+  position: relative;
+  top: 0px;
+  left: 0px;
+}
+
+table.detail td.percent {
+  border: 1px solid #99cc99;
+  background-color: #99ff66;
+}
+
+table.detail td.severity-very-high {
+  border: 1px solid #dd6633;
+  background-color: #dd8866;
+}
+
+table.detail td.severity-very-low {
+  border: 1px solid #dd6633;
+  background-color: #dd8866;
+}
+
+table.detail td.severity-low {
+  border: 1px solid #dd6633;
+  background-color: #dd8866;
+}
+
+table.detail td.severity-med {
+  border: 1px solid #dd6633;
+  background-color: #dd8866;
+}
+
+table.detail td.severity-high {
+  border: 1px solid #dd6633;
+  background-color: #dd8866;
+}
+
+table.detail td.severity-very-high {
+  border: 1px solid #dd6633;
+  background-color: #dd8866;
+}
+
+
+
+div.detail {
+  width: 75%;
+  border: 1px solid blue;
+}
+
+div.detail div {
+  border: 1px solid yellow;
+}
+
+div.test-run {
+  position: relative;
+  margin-top: 10px;
+  border-top: 1px dashed blue;
+}
+
+div.test-run div.file {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+
+div.test-run div.results {
+  position: absolute;
+  top: 0px;
+  left: 100px;
+}
+
+div.test-run div.percent {
+  position: absolute;
+  top: 0px;
+  left: 500px;
+}
+
+ul.test-summary {
+  clear: both;
+	margin: 0;
+	padding: 0;
+}
+
+ul.test-summary li {
+  float: left;
+	margin-left: 1;
+	padding: 0;
+  width: 15px;
+  height: 10px;
+	list-style: none;
+}
+
+ul.test-summary li a {
+  display: block;
+	margin: 0;
+	padding: 0;
+  text-decoration: none;
+  width: 100%;
+  height: 100%;
+}
+
+ul.test-summary li.ok {
+  border: 1px solid #99cc99;
+  background-color: #99ff66;
+}
+
+ul.test-summary li.todo-ok {
+  border: 1px solid #eeaa00;
+  background-color: #ffcc00;
+}
+
+ul.test-summary li.skip-ok {
+  border: 1px solid #eeaa00;
+  background-color: #ffdd11;
+}
+
+ul.test-summary li.not-ok {
+  border: 1px solid #dd6633;
+  background-color: #dd8866;
+}
+
+ul.test-summary li.todo-not-ok {
+  border: 1px solid #99cc66;
+  background-color: #66cc33;
+}
+
+
+/* parse errors */
+ul.parse-errors {
+	margin: 0;
+	padding: 0;
+  clear: left;
+}
+
+ul.parse-errors li {
+	margin-left: 4px;
+	list-style: none;
+  color: red;
+}
+
+/* the test output */
+ul.test-out {
+	margin: 0;
+	padding: 0;
+  clear: left;
+  display: none;
+}
+
+ul.test-out li {
+	margin-left: 4;
+	border-left: none;
+	list-style: none;
+}
+
+ul.test-out li.test {
   ;
 }
 
-div.test-run div.comment {
-  color: grey;
+ul.test-out li.comment {
+  color: #666666;
+  font-family: monospace;
 }
 
-div.test-run div.plan {
+ul.test-out li.plan {
   color: blue;
 }
 
-div.test-run div.ok {
+ul.test-out li.ok {
   /* green-ish, prolly not necessary */
   background-color: #eeffee;
 }
 
-div.test-run div.todo-ok {
+ul.test-out li.todo-ok {
   color: #ee6666;
 }
 
-div.test-run div.todo-not-ok {
+ul.test-out li.todo-not-ok {
   color: #770000;
 }
 
-div.test-run div.not-ok {
+ul.test-out li.not-ok {
   /* red-ish */
   background-color: #ff9966;
 }
 
-div.test-run div.unknown {
-  color: red;
+ul.test-out li.unknown {
+  color: #ff9900;
 }
-
 		</style>
 	</head>
 	<body>
-		<div id="summary">
-			<span class="title">Summary:</span>
-			<table class="summary">
-				<tr><td class="label">result:</td><td class="val">[% IF report.has_errors %]<span class="fail">FAILED</span>[% ELSE %]<span class="pass">PASSED</span>[% END %]</td></tr>
-				<tr><td class="label"># files:</td><td class="val">[% report.num_files %]</td></tr>
-				<tr><td class="label">total # tests:</td><td class="val">[% report.total %]</td></tr>
-				<tr><td class="label">passed:</td><td class="val">[% report.failed %]/[% report.total %] ([% report.percent_passed %]%)</td></tr>
-				<tr><td class="label">elapsed time:</td><td class="val">[% report.elapsed_time %]</td></tr>
+		[% IF report.has_errors %][% SET status = 'failed' %][% ELSE %][% SET status = 'passed' %][% END -%]
+		<div id="summary" class="[% status %]">
+			<ul class="summary">
+				<li>status: [% status FILTER upper %]</li>
+				<li>[% report.total %] tests</li>
+				<li>[% report.num_files %] files</li>
+				<li>passed: [% report.passed %]/[% report.total %] ([% report.percent_passed %]%)</li>
+				<li>[% report.elapsed_time %]</li>
+			</ul>
+		</div>
 
-<!--
-				<tr><td class="label">has errors:</td><td class="val">[% report.has_errors %]</td></tr>
-				<tr><td class="label">has problems:</td><td class="val">[% report.has_problems %]</td></tr>
-				<tr><td class="label">failed:</td><td class="val">[% report.failed %]</td></tr>
-				<tr><td class="label">parse errors:</td><td class="val">[% report.parse_errors %]</td></tr>
-				<tr><td class="label">passed:</td><td class="val">[% report.passed %]</td></tr>
-				<tr><td class="label">skipped:</td><td class="val">[% report.skipped %]</td></tr>
-				<tr><td class="label">todo:</td><td class="val">[% report.todo %]</td></tr>
-				<tr><td class="label">todo passed:</td><td class="val">[% report.todo_passed %]</td></tr>
-				<tr><td class="label">wait:</td><td class="val">[% report.wait %]</td></tr>
-				<tr><td class="label">exit:</td><td class="val">[% report.exit %]</td></tr>
--->
+		<div id="detail">
+			<table class="detail">
+				<thead>
+					<tr>
+						<th class="file">Test file</th>
+						<th class="results">Test results</th>
+						<th class="time">Time</th>
+						<th class="percent">%</th>
+					</tr>
+				</thead>
+				<tbody>
+			[% FOREACH test IN report.tests -%]
+			<tr id="[% test.test %]" class="test-run [% test.test_status %]">
+				<td class="file">
+					<a href="#" title="Test overview:            
+	[% test.tests_planned || 0 %] planned, [% test.tests_run || 0 %] run
+[% IF test.has_problems %]	has problems!
+[% END -%]
+[% IF test.num_parse_errors %]	has parse errors!
+[% END -%]
+[% IF test.skip_all %]	skipped all
+[% END -%]
+	[% test.passed || 0 %] ok, [% test.failed || 0 %] failed
+	[% test.todo || 0 %] todo, [% test.skipped || 0 %] skipped
+[% IF test.todo_failed %]	some todo tests failed
+[% END -%]
+[% IF test.todo_passed %]	some todo tests unexpectedly passed!
+[% END -%]
+	wait/exit status: [% test.wait %]/[% test.exit %]">[% test.test %]</a>
+					</div>
+				</td>
+				<td class="results">
+					[% SET max_tests = 0 %]
+					[% SET max_tests = test.tests_planned IF test.tests_planned AND test.tests_planned > max_tests %]
+					[% SET max_tests = test.tests_run IF test.tests_run AND test.tests_run > max_tests %]
+					<ul class="test-summary">
+						[% IF test.tests_run AND test.tests_run > 0 %]
+						  [%- SET result_width = (95 / test.tests_run) -%]
+						  [% FOREACH result IN test.results -%]
+						    [%- IF result.is_test %]<li class="test [% result.test_status %]" style="width: [% result_width | format('%d') %]%"><a href="#[% test.test _ '-' _ result.test_num %]" title="[% result.raw | html %]">&nbsp;</a></li>[% END %]
+						  [% END %]
+						[% ELSIF test.skip_all %]
+						  <li class="skip-ok" style="width: 95%"><a href="#" title="[% result.first.raw | html %]">&nbsp;</a></li>
+						[% ELSE %]
+						  <li class="stub not-ok" style="width: 95%">&nbsp;</li>
+						[% END %]
+					</ul>
+					[% IF test.parse_errors -%]
+					<ul class="parse-errors">
+						[% FOREACH e IN test.parse_errors %]<li>Parse error: [% e %]</li>[% END -%]
+					</ul>
+					[% END -%]
+					<ul class="test-out">
+						[% FOREACH result IN test.results -%]
+						<li id="[% test.test _ '-' _ result.test_num %]"
+								class="[% result.type -%]
+											 [%- IF result.is_test %] test-num-[% result.test_num %][% ' ' _ result.test_status -%]
+											 [%- END %]">[% result.raw | html -%]</li>
+						[% END -%]
+					</ul>
+				</div>
+				<td class="time">[% test.elapsed_time | format('%.2fs') %]</td>
+				<td class="percent [%IF test.severity %][% 'severity-' _ test.severity %][% END %]">[% test.percent_passed %]%</td>
+			</tr>
+			[% END %]
+				</tbody>
+				<tfoot>
+					<tr>
+						<td class="file">[% report.num_files %] files</td>
+						<td class="results">
+							[% report.total %] tests,
+							[% report.passed %] ok,
+							[% report.failed %] failed,
+							[% report.todo %] todo,
+							[% report.skipped %] skipped <br/>
+							[% report.parse_errors %] parse errors,
+							[% report.wait %] wait status,
+							[% report.exit %] exit status</td>
+						<td class="time">[% report.total_time | format('%.2fs') %]</td>
+						<td class="percent">[% report.percent_passed %]%</td>
+					</tr>
+				</tfoot>
 			</table>
 		</div>
 
-<!--
-<xmp>
-spurkis@lamb:~/dev/spurkis-svn/TAP-Formatter-HTML $ perl t/01_basic.t               
-ok 1 - use TAP::Formatter::HTML;
-t/data/01_pass...............ok   
-t/data/02_fail............... Dubious, test returned 3 (wstat 768, 0x300)
- Failed 3/7 subtests 
-t/data/03_plan_fail.......... Dubious, test returned 255 (wstat 65280, 0xff00)
- All 2 subtests passed 
-t/data/04_die_fail........... Dubious, test returned 255 (wstat 65280, 0xff00)
- All 2 subtests passed 
-t/data/05_compile_fail....... Dubious, test returned 255 (wstat 65280, 0xff00)
- No subtests run 
-
-Test Summary Report
--------------------
-t/data/02_fail.pl        (Wstat: 768 Tests: 7 Failed: 3)
-  Failed tests:  4-5, 7
-  Non-zero exit status: 3
-t/data/03_plan_fail.pl   (Wstat: 65280 Tests: 3 Failed: 1)
-  Failed test:  3
-  Non-zero exit status: 255
-  Parse errors: Bad plan.  You planned 2 tests but ran 3.
-t/data/04_die_fail.pl    (Wstat: 65280 Tests: 3 Failed: 1)
-  Failed test:  3
-  Non-zero exit status: 255
-  Parse errors: Bad plan.  You planned 2 tests but ran 3.
-t/data/05_compile_fail.pl (Wstat: 65280 Tests: 0 Failed: 0)
-  Non-zero exit status: 255
-  Parse errors: No plan found in TAP output
-Files=5, Tests=20,  1 wallclock secs ( 0.05 usr  0.04 sys +  0.27 cusr  0.08 csys =  0.44 CPU)
-Result: FAIL
-1..1
-</xmp>
--->
-
-		<div id="detail">
-			<span class="title">Detail:</span>
-			[% FOREACH test IN report.tests -%]
-			<div id="[% test.test %]" class="test-run">
-				<span class="test-name">[% test.test %]</span>
-				[% FOREACH result IN test.results -%]
-				<div class="[% result.type -%]
-										[%- IF result.test_num %] test-num-[% result.test_num %][% END -%]
-                    [%- IF result.ok == 'ok' -%]
-										  [%- IF result.has_todo %] todo-ok[% ELSE %] ok[% END -%]
-										[%- ELSIF result.ok == 'not ok' -%]
-										  [%- IF result.has_todo %] todo-not-ok[% ELSE %] not-ok[% END -%]
-										[%- END %]">[% result.raw -%]</div>
-				[% END -%]
-			</div>
-			[% END %]
-		</div>
-
 		<xmp>
-[% PERL %]
+[ % PERL %]
 use Data::Dumper;
 print "report: " . Dumper( $stash->get( 'report' ) );
-[% END %]
+[ % END %]
 		</xmp>
 	</body>
 </html>

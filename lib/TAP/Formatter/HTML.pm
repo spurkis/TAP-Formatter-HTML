@@ -7,6 +7,10 @@ TAP::Formatter::HTML - Harness output delegate for html output
  use TAP::Harness;
  my $harness = TAP::Harness->new({ formatter_class => 'TAP::Formatter::HTML' });
 
+ # if you want stderr too:
+ my $harness = TAP::Harness->new({ formatter_class => 'TAP::Formatter::HTML',
+                                   merge => 1 });
+
 =cut
 
 package TAP::Formatter::HTML;
@@ -21,7 +25,7 @@ use Template;
 #use Template::Plugin::Cycle;
 
 use base qw( TAP::Base );
-use accessors qw( verbosity tests session_class sessions template template_file );
+use accessors qw( verbosity tests session_class sessions template template_file css_uri js_uri );
 
 use constant default_session_class => 'TAP::Formatter::HTML::Session';
 
@@ -35,9 +39,10 @@ sub _initialize {
 
     $args ||= {};
     $self->SUPER::_initialize($args);
-    $self->verbosity(0)->session_class($self->default_session_class);
-    $self->template( $self->create_template_processor )
-      ->template_file( 'test-results.tt2' );
+    $self->verbosity( 0 )
+         ->session_class( $self->default_session_class )
+         ->template( $self->create_template_processor )
+         ->template_file( 'test-results.tt2' );
 
     return $self;
 }
@@ -47,13 +52,12 @@ sub create_template_processor {
     return Template->new(
 			 COMPILE_DIR  => catdir( tempdir(), "TAP-Formatter-HTML-$$" ),
 			 COMPILE_EXT  => '.ttc',
-			 INCLUDE_PATH => catdir(qw( t data )),
-			 EVAL_PERL    => 1,
+			 INCLUDE_PATH => catdir(qw( t data )), # DEBUG
+			 EVAL_PERL    => 1, # DEBUG
 			);
 }
 
-
-sub verbose      { shift->verbosity >= 1 }
+sub verbose      { shift->verbosity >=  1 }
 sub quiet        { shift->verbosity <= -1 }
 sub really_quiet { shift->verbosity <= -2 }
 sub silent       { shift->verbosity <= -3 }
@@ -113,6 +117,9 @@ sub prepare_report {
 	     elapsed_time => $a->elapsed_timestr,
 	    };
 
+    $r->{css_uri} = $self->css_uri;
+    $r->{js_uri}  = $self->js_uri;
+
     # add aggregate test info:
     for my $key (qw(
 		    total
@@ -131,14 +138,21 @@ sub prepare_report {
     }
 
     # do some other handy calcs:
-    $r->{percent_passed} = sprintf('%.1f', $r->{passed} / $r->{total} * 100);
+    if ($r->{total}) {
+	$r->{percent_passed} = sprintf('%.1f', $r->{passed} / $r->{total} * 100);
+    } else {
+	$r->{percent_passed} = 0;
+    }
 
     # TODO: coverage?
 
     # add test results:
+    my $total_time = 0;
     foreach my $s (@{ $self->sessions }) {
 	push @{$r->{tests}}, $s->as_report;
+	$total_time += $s->{elapsed_time} || 0;
     }
+    $r->{total_time} = $total_time;
 
     # this is close enough:
     $r->{num_files} = scalar @{ $self->sessions };
@@ -148,6 +162,7 @@ sub prepare_report {
 
 sub log {
     my ($self, @args) = @_;
+    # poor man's logger, but less deps is great!
     print STDERR '# ', @args, "\n";
 }
 
@@ -186,6 +201,13 @@ sub result {
     my ($self, $result) = @_;
     #warn ref($self) . "->result called with args: " . Dumper( $result );
     $self->log( $result->as_string );
+
+    # set this to avoid the hassle of recalculating it in the template:
+    if ($result->is_test) {
+	$result->{test_status}  = $result->has_todo ? 'todo-' : '';
+	$result->{test_status} .= $result->is_ok ? 'ok' : 'not-ok';
+    }
+
     push @{ $self->results }, $result;
     return;
 }
@@ -217,18 +239,54 @@ sub as_report {
 		    has_problems
 		    failed
 		    passed
+		    wait
+		    exit
 		   )) {
 	$r->{$key} = $p->$key;
     }
 
+    $r->{num_parse_errors} = $p->parse_errors;
     $r->{parse_errors} = [ $p->parse_errors ];
+    $r->{passed_tests} = [ $p->passed ];
+    $r->{failed_tests} = [ $p->failed ];
+
+    # do some other handy calcs:
+    $r->{test_status} = $r->{has_problems} ? 'not-ok' : 'ok';
+    $r->{elapsed_time} = $r->{end_time} - $r->{start_time};
+    if ($r->{tests_planned}) {
+	my $p = $r->{percent_passed} = sprintf('%.1f', $r->{passed} / $r->{tests_planned} * 100);
+	if ($p != 100) {
+	    # nb: this also catches more tests passed than planned
+	    my $s;
+	    if ($p < 25)    { $s = 'very-high' }
+	    elsif ($p < 50) { $s = 'high' }
+	    elsif ($p < 75) { $s = 'med' }
+	    elsif ($p < 95) { $s = 'low' }
+	    else            { $s = 'very-low' }
+	    $r->{severity} = $s;
+	}
+    } else {
+	$r->{percent_passed} = 0;
+	$r->{severity} = 'very-high';
+    }
+
+    if ($r->{num_parse_errors}) {
+	$r->{severity} = 'very-high';
+    }
+
+    if ($r->{has_problems}) {
+	$r->{severity} ||= 'high';
+    }
+
     return $r;
 }
 
 sub log {
     my ($self, @args) = @_;
+    # poor man's logger, but less deps is great!
     print STDERR '# ', @args, "\n";
 }
+
 
 1;
 
@@ -251,7 +309,7 @@ Steve Purkis <spurkis@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2008 S Purkis Consulting Ltd.
+Copyright (c) 2008 S Purkis Consulting Ltd.  All rights reserved.
 
 This module is released under the same terms as Perl itself.
 
