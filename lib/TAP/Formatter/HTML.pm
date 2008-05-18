@@ -387,7 +387,9 @@ __END__
 This module provides HTML output formatting for L<TAP::Harness> (a replacement
 for L<Test::Harness>.  It is largely based on ideas from
 L<TAP::Test::HTMLMatrix> (which was built on L<Test::Harness> and thus had a
-from a few limitations - hence this module).
+from a few limitations - hence this module).  For sample output, see:
+
+L<http://www.spurkis.org/TAP-Formatter-HTML/test-output.html>
 
 This module is targeted at all users of automated test suites.  It is meant to
 make testing easier & more useful (and hopefully more likely to happen at your
@@ -590,7 +592,11 @@ This module is released under the same terms as Perl itself.
 
 =head1 SEE ALSO
 
-Examples in the C<examples> directory.
+Examples in the C<examples> directory and here:
+
+L<http://www.spurkis.org/TAP-Formatter-HTML/test-output.html>,
+L<http://www.spurkis.org/TAP-Formatter-HTML/DBD-SQLite-example.html>,
+L<http://www.spurkis.org/TAP-Formatter-HTML/Template-example.html>
 
 L<prove> - L<TAP::Harness>'s new cmdline utility.  It's great, use it!
 
