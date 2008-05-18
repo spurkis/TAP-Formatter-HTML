@@ -256,6 +256,11 @@ sub result {
 	if ($result->is_ok || $result->is_unplanned && $result->is_actual_ok) {
 	    $self->meta->{passed_including_unplanned}++;
 	}
+
+	# mark passed todo tests for easy reference:
+	if ($result->has_todo && $result->is_actual_ok) {
+	    $result->{todo_passed} = 1;
+	}
     }
 
 
