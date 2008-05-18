@@ -20,26 +20,29 @@ use warnings;
 
 use POSIX qw( ceil );
 use File::Temp qw( tempfile tempdir );
-use File::Spec::Functions qw( catdir );
+use File::Spec::Functions qw( catdir catfile file_name_is_absolute rel2abs );
 
+use URI;
 use Template;
+
+# DEBUG:
+#use Data::Dumper 'Dumper';
 
 use base qw( TAP::Base );
 use accessors qw( verbosity tests session_class sessions template template_file
-		  css_uris js_uris inline_css inline_js );
+		  css_uris js_uris inline_css inline_js abs_file_paths force_inline_css );
 
 use constant default_session_class => 'TAP::Formatter::HTML::Session';
-use constant default_template      => 'test-results.tt2';
-use constant default_js_uris       => ['t/data/jquery-1.2.3.pack.js'];
-use constant default_css_uris      => ['t/data/test-results.css'];
+use constant default_template      => 'TAP/Formatter/HTML/default_report.tt2';
+use constant default_js_uris       => ['file:TAP/Formatter/HTML/jquery-1.2.3.pack.js'];
+use constant default_css_uris      => ['file:TAP/Formatter/HTML/default_report.css'];
 use constant default_inline_js     => '';
 use constant default_inline_css    => '';
 use constant default_template_processor =>
   Template->new(
 		COMPILE_DIR  => catdir( tempdir(), "TAP-Formatter-HTML-$$" ),
 		COMPILE_EXT  => '.ttc',
-		INCLUDE_PATH => catdir(qw( t data )), # DEBUG
-		EVAL_PERL    => 1, # DEBUG
+		INCLUDE_PATH => join(':', @INC),
 	       );
 
 use constant severity_map => {
@@ -59,15 +62,14 @@ use constant severity_map => {
 
 our $VERSION = '0.01';
 
-# DEBUG:
-use Data::Dumper 'Dumper';
-
 sub _initialize {
     my ($self, $args) = @_;
 
     $args ||= {};
     $self->SUPER::_initialize($args);
     $self->verbosity( 0 )
+         ->abs_file_paths( 1 )
+         ->force_inline_css( 1 )
          ->session_class( $self->default_session_class )
          ->template( $self->default_template_processor )
          ->template_file( $self->default_template )
@@ -125,6 +127,10 @@ sub summary {
 
 sub generate_report {
     my ($self, $r) = @_;
+
+    $self->check_uris;
+    $self->slurp_css if $self->force_inline_css;
+
     my $params = {
 		  report => $r,
 		  js_uris  => $self->js_uris,
@@ -132,8 +138,38 @@ sub generate_report {
 		  incline_js  => $self->inline_js,
 		  inline_css => $self->inline_css,
 		 };
+
     return $self->template->process( $self->template_file, $params )
       || die $self->template->error;
+}
+
+# convert all uris to URI objs
+# check file uris (if relative & not found, try & find them in @INC)
+sub check_uris {
+    my ($self) = @_;
+
+    foreach my $uri_list ($self->js_uris, $self->css_uris) {
+	# take them out of the list to verify, push them back on later
+	my @uris = splice( @$uri_list, 0, scalar @$uri_list );
+	foreach my $uri (@uris) {
+	    $uri = URI->new( $uri );
+	    if ($uri->scheme && $uri->scheme eq 'file') {
+		my $path = $uri->path;
+		unless (file_name_is_absolute($path)) {
+		    my $new_path;
+		    if (-e $path) {
+			$new_path = rel2abs( $path ) if ($self->abs_file_paths);
+		    } else {
+			$new_path = $self->find_in_INC( $path );
+		    }
+		    $uri->path( $new_path ) if ($new_path);
+		}
+	    }
+	    push @$uri_list, $uri;
+	}
+    }
+
+    return $self;
 }
 
 sub prepare_report {
@@ -196,10 +232,59 @@ sub prepare_report {
     return $r;
 }
 
+# adapted from Test::TAP::HTMLMatrix
+# always return abs file paths if $self->abs_file_paths is on
+sub find_in_INC {
+    my ($self, $file) = @_;
+
+    foreach my $path (grep { not ref } @INC) {
+	my $target = catfile($path, $file);
+	if (-e $target) {
+	    $target = rel2abs($target) if $self->abs_file_paths;
+	    return $target;
+	}
+    }
+
+    # non-fatal
+    $self->log("Warning: couldn't find $file in \@INC");
+    return;
+}
+
+# adapted from Test::TAP::HTMLMatrix
+# slurp all 'file' uris, if possible
+# note: doesn't remove them from the css_uris list, just in case...
+sub slurp_css {
+    my ($self) = shift;
+    $self->log("slurping css files inline");
+
+    my $inline_css = $self->inline_css || '';
+    foreach my $uri (@{ $self->css_uris }) {
+	my $scheme = $uri->scheme;
+	if ($scheme && $scheme eq 'file') {
+	    my $path = $uri->path;
+	    if (-e $path) {
+		if (open my $fh, $path) {
+		    local $/ = undef;
+		    $inline_css .= <$fh>;
+		} else {
+		    $self->log("Warning: couldn't open $path: $!");
+		}
+	    } else {
+		$self->log("Warning: couldn't read $path: file does not exist!");
+	    }
+	} else {
+	    $self->log("Warning: can't include $uri inline: not a file uri");
+	}
+    }
+
+    $self->inline_css( $inline_css );
+}
+
 sub log {
     my ($self, @args) = @_;
     # poor man's logger, but less deps is great!
     print STDERR '# ', @args, "\n";
+    return $self;
 }
 
 
