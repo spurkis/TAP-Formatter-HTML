@@ -5,11 +5,27 @@ TAP::Formatter::HTML - Harness output delegate for html output
 =head1 SYNOPSIS
 
  use TAP::Harness;
- my $harness = TAP::Harness->new({ formatter_class => 'TAP::Formatter::HTML' });
-
- # if you want stderr too:
+ # assuming you want stderr too:
  my $harness = TAP::Harness->new({ formatter_class => 'TAP::Formatter::HTML',
                                    merge => 1 });
+ $harness->runtests( @tests );
+ # prints to stdout
+
+ # otherwise:
+ my $harness = TAP::Harness->new({ formatter_class => 'TAP::Formatter::HTML' });
+
+ # to use a custom formatter:
+ my $fmt = TAP::Formatter::HTML->new;
+ $fmt->css_uris([])->inline_css( $my_css )
+     ->js_uris(['http://mysite.com/jquery.js', 'http://mysite.com/custom.js'])
+     ->inline_js( '$(div.summary).hide()' );
+
+ my $harness = TAP::Harness->new({ formatter => $fmt, merge => 1 });
+
+ # you can use your own customized templates too:
+ $fmt->template('custom.tt2')
+     ->template_processor( Template->new )
+     ->force_inline_css(0);
 
 =cut
 
@@ -18,29 +34,29 @@ package TAP::Formatter::HTML;
 use strict;
 use warnings;
 
+use URI;
+use Template;
 use POSIX qw( ceil );
 use File::Temp qw( tempfile tempdir );
 use File::Spec::Functions qw( catdir catfile file_name_is_absolute rel2abs );
 
-use URI;
-use Template;
+use TAP::Formatter::HTML::Session;
 
 # DEBUG:
 #use Data::Dumper 'Dumper';
 
 use base qw( TAP::Base );
-use accessors qw( verbosity tests session_class sessions template template_file
+use accessors qw( verbosity stdout escape_output tests session_class sessions
+		  template_processor template html
 		  css_uris js_uris inline_css inline_js abs_file_paths force_inline_css );
 
 use constant default_session_class => 'TAP::Formatter::HTML::Session';
 use constant default_template      => 'TAP/Formatter/HTML/default_report.tt2';
 use constant default_js_uris       => ['file:TAP/Formatter/HTML/jquery-1.2.3.pack.js'];
 use constant default_css_uris      => ['file:TAP/Formatter/HTML/default_report.css'];
-use constant default_inline_js     => '';
-use constant default_inline_css    => '';
 use constant default_template_processor =>
   Template->new(
-		COMPILE_DIR  => catdir( tempdir(), "TAP-Formatter-HTML-$$" ),
+		COMPILE_DIR  => catdir( tempdir(), 'TAP-Formatter-HTML' ),
 		COMPILE_EXT  => '.ttc',
 		INCLUDE_PATH => join(':', @INC),
 	       );
@@ -68,29 +84,58 @@ sub _initialize {
     $args ||= {};
     $self->SUPER::_initialize($args);
     $self->verbosity( 0 )
+         ->stdout( \*STDOUT )
+	 ->escape_output( 0 )
+         ->abs_file_paths( 1 )
          ->abs_file_paths( 1 )
          ->force_inline_css( 1 )
          ->session_class( $self->default_session_class )
-         ->template( $self->default_template_processor )
-         ->template_file( $self->default_template )
+         ->template_processor( $self->default_template_processor )
+         ->template( $self->default_template )
          ->js_uris( $self->default_js_uris )
          ->css_uris( $self->default_css_uris )
-         ->inline_js( $self->default_inline_js )
-	 ->inline_css( $self->default_inline_css );
+         ->inline_js( '' )
+	 ->inline_css( '' );
+
+    # Laziness...
+    # trust the user knows what they're doing with the args:
+    foreach my $key (keys %$args) {
+	$self->$key( $args->{$key} ) if ($self->can( $key ));
+    }
 
     return $self;
 }
 
-sub verbose      { shift->verbosity >=  1 }
-sub quiet        { shift->verbosity <= -1 }
-sub really_quiet { shift->verbosity <= -2 }
-sub silent       { shift->verbosity <= -3 }
+sub verbose {
+    my $self = shift;
+    # emulate a classic accessor for compat w/TAP::Formatter::Console:
+    if (@_) { $self->verbosity(1) }
+    return $self->verbosity >= 1;
+}
+sub quiet {
+    my $self = shift;
+    # emulate a classic accessor for compat w/TAP::Formatter::Console:
+    if (@_) { $self->verbosity(-1) }
+    return $self->verbosity <= -1;
+}
+sub really_quiet {
+    my $self = shift;
+    # emulate a classic accessor for compat w/TAP::Formatter::Console:
+    if (@_) { $self->verbosity(-2) }
+    return $self->verbosity <= -2;
+}
+sub silent {
+    my $self = shift;
+    # emulate a classic accessor for compat w/TAP::Formatter::Console:
+    if (@_) { $self->verbosity(-3) }
+    return $self->verbosity <= -3;
+}
 
 # Called by Test::Harness before any test output is generated.
 sub prepare {
     my ($self, @tests) = @_;
     # warn ref($self) . "->prepare called with args:\n" . Dumper( \@tests );
-    $self->log( 'running ', scalar @tests, ' tests' );
+    $self->info( 'running ', scalar @tests, ' tests' );
     $self->sessions([])->tests( [@tests] );
 }
 
@@ -105,14 +150,16 @@ sub prepare {
 sub open_test {
     my ($self, $test, $parser) = @_;
     #warn ref($self) . "->open_test called with args: " . Dumper( [$test, $parser] );
-    my $session = $self->session_class->new({ test => $test, parser => $parser });
+    my $session = $self->session_class->new({ test => $test,
+					      parser => $parser,
+					      formatter => $self });
     push @{ $self->sessions }, $session;
     return $session;
 }
 
-#  $harness->summary( $aggregate );
+# $str = $harness->summary( $aggregate );
 #
-# C<summary> prints the summary report after all tests are run.  The argument is
+# C<summary> produces the summary report after all tests are run.  The argument is
 # an aggregate.
 sub summary {
     my ($self, $aggregate) = @_;
@@ -120,9 +167,11 @@ sub summary {
 
     # farmed out to make sub-classing easy:
     my $report = $self->prepare_report( $aggregate );
-    my $html   = $self->generate_report( $report );
+    $self->generate_report( $report );
 
-    return $html;
+    $self->_output( $self->html );
+
+    return $self;
 }
 
 sub generate_report {
@@ -137,10 +186,15 @@ sub generate_report {
 		  css_uris => $self->css_uris,
 		  incline_js  => $self->inline_js,
 		  inline_css => $self->inline_css,
+		  formatter => { class => ref( $self ),
+				 version => $self->VERSION },
 		 };
 
-    return $self->template->process( $self->template_file, $params )
-      || die $self->template->error;
+    my $html = '';
+    $self->template_processor->process( $self->template, $params, \$html )
+      || die $self->template_processor->error;
+
+    $self->html( \$html );
 }
 
 # convert all uris to URI objs
@@ -255,7 +309,7 @@ sub find_in_INC {
 # note: doesn't remove them from the css_uris list, just in case...
 sub slurp_css {
     my ($self) = shift;
-    $self->log("slurping css files inline");
+    $self->info("slurping css files inline");
 
     my $inline_css = $self->inline_css || '';
     foreach my $uri (@{ $self->css_uris }) {
@@ -281,171 +335,40 @@ sub slurp_css {
 }
 
 sub log {
-    my ($self, @args) = @_;
-    # poor man's logger, but less deps is great!
-    print STDERR '# ', @args, "\n";
+    my $self = shift;
+    push @_, "\n" unless grep {/\n/} @_;
+    unshift @_, '# ' if $self->escape_output;
+    $self->_output( @_ );
     return $self;
 }
 
-
-1;
-
-package TAP::Formatter::HTML::Session;
-
-use strict;
-use warnings;
-
-use base qw( TAP::Base );
-use accessors qw( test parser results html_id meta closed );
-
-# DEBUG:
-use Data::Dumper 'Dumper';
-
-sub _initialize {
-    my ($self, $args) = @_;
-
-    $args ||= {};
-    $self->SUPER::_initialize($args);
-
-    $self->results([])->meta({})->closed(0);
-    foreach my $arg (qw( test parser )) {
-	$self->$arg($args->{$arg}) if defined $args->{$arg};
-    }
-
-    # make referring to it in HTML easy:
-    my $html_id = $self->test;
-    $html_id    =~ s/[^a-zA-Z\d-]/-/g;
-    $self->html_id( $html_id );
-
-    $self->log( $self->test, ':' );
-
-    return $self;
+sub info {
+    my $self = shift;
+    return unless $self->verbose;
+    return $self->log( @_ );
 }
 
-# Called by TAP::?? to create a result after a session is opened
-sub result {
-    my ($self, $result) = @_;
-    #warn ref($self) . "->result called with args: " . Dumper( $result );
-    $self->log( $result->as_string );
-
-    if ($result->is_test) {
-	# make referring to it in HTML easy:
-	$result->{html_id} = $self->html_id . '-' . $result->number;
-
-	# set this to avoid the hassle of recalculating it in the template:
-	$result->{test_status}  = $result->has_todo ? 'todo-' : '';
-	$result->{test_status} .= $result->has_skip ? 'skip-' : '';
-	$result->{test_status} .= $result->is_actual_ok ? 'ok' : 'not-ok';
-
-	# keep track of passes (including unplanned!) for percent_passed calcs:
-	if ($result->is_ok || $result->is_unplanned && $result->is_actual_ok) {
-	    $self->meta->{passed_including_unplanned}++;
-	}
-
-	# mark passed todo tests for easy reference:
-	if ($result->has_todo && $result->is_actual_ok) {
-	    $result->{todo_passed} = 1;
-	}
-    }
-
-
-    push @{ $self->results }, $result;
-    return;
+sub log_test {
+    my $self = shift;
+    return if $self->really_quiet;
+    return $self->log( @_ );
 }
 
-# Called by TAP::?? to indicate there are no more test results coming
-sub close_test {
-    my ($self, @args) = @_;
-    # warn ref($self) . "->close_test called with args: " . Dumper( [@args] );
-    #print STDERR 'end of: ', $self->test, "\n\n";
-    $self->closed(1);
-    return;
+sub log_test_info {
+    my $self = shift;
+    return if $self->quiet;
+    return $self->log( @_ );
 }
 
-sub as_report {
-    my ($self) = @_;
-    my $p = $self->parser;
-    my $r = {
-	    test => $self->test,
-	    results => $self->results,
-	   };
-
-    # add parser info:
-    for my $key (qw(
-		    tests_planned
-		    tests_run
-		    start_time
-		    end_time
-		    skip_all
-		    has_problems
-		    passed
-		    failed
-		    todo_passed
-		    actual_passed
-		    actual_failed
-		    wait
-		    exit
-		   )) {
-	$r->{$key} = $p->$key;
-    }
-
-    $r->{num_parse_errors} = scalar $p->parse_errors;
-    $r->{parse_errors} = [ $p->parse_errors ];
-    $r->{passed_tests} = [ $p->passed ];
-    $r->{failed_tests} = [ $p->failed ];
-
-    # do some other handy calcs:
-    $r->{test_status} = $r->{has_problems} ? 'failed' : 'passed';
-    $r->{elapsed_time} = $r->{end_time} - $r->{start_time};
-    $r->{severity} = '';
-    if ($r->{tests_planned}) {
-	# Calculate percentage passed as # passes *including* unplanned passes
-	# so we can get > 100% -- this can be a good indicator as to why a test
-	# failed!
-	my $passed_incl_unplanned = $self->meta->{passed_including_unplanned} || 0;
-	my $p = $r->{percent_passed} = sprintf('%.1f', $passed_incl_unplanned / $r->{tests_planned} * 100);
-	if ($p != 100) {
-	    my $s;
-	    if ($p < 25)    { $s = 'very-high' }
-	    elsif ($p < 50) { $s = 'high' }
-	    elsif ($p < 75) { $s = 'med' }
-	    elsif ($p < 95) { $s = 'low' }
-	    else            { $s = 'very-low' }
-	    # classify >100% as very-low
-	    $r->{severity} = $s;
-	}
-    } elsif ($r->{skip_all}) {
-	; # do nothing
+sub _output {
+    my $self = shift;
+    return if $self->silent;
+    if (ref($_[0]) && ref( $_[0]) eq 'SCALAR') {
+	# printing HTML:
+	print { $self->stdout } ${ $_[0] };
     } else {
-	$r->{percent_passed} = 0;
-	$r->{severity} = 'very-high';
+	print { $self->stdout } @_;
     }
-
-    if (my $num = $r->{num_parse_errors}) {
-	if ($num == 1 && ! $p->is_good_plan) {
-	    $r->{severity} ||= 'low'; # prefer value set calculating % passed
-	} else {
-	    $r->{severity} = 'very-high';
-	}
-    }
-
-    # check for scripts that died abnormally:
-    if ($r->{exit} && $r->{exit} == 255 && $p->is_good_plan) {
-	$r->{severity} ||= 'very-high';
-    }
-
-    # catch-all:
-    if ($r->{has_problems}) {
-	$r->{severity} ||= 'high';
-    }
-
-    return $r;
-}
-
-sub log {
-    my ($self, @args) = @_;
-    # poor man's logger, but less deps is great!
-    print STDERR '# ', @args, "\n";
 }
 
 
@@ -456,13 +379,148 @@ __END__
 
 =head1 DESCRIPTION
 
-This provides html orientated output formatting for TAP::Harness.
+This provides html output formatting for TAP::Harness.
+
+Documentation is rather sparse at the moment.
 
 =cut
 
 =head1 METHODS
 
-not yet documented...
+=head2 CONSTRUCTOR
+
+=head3 new( \%args )
+
+=head2 ACCESSORS
+
+All chaining L<accessors>:
+
+=head3 verbosity( [ $v ] )
+
+Verbosity level, as defined in L<TAP::Harness/new>:
+
+     1   verbose        Print individual test results (and more) to STDOUT.
+     0   normal
+    -1   quiet          Suppress some test output (eg: test failures).
+    -2   really quiet   Suppress everything but the HTML report.
+    -3   silent         Suppress all output, including the HTML report.
+
+Note that the report is also available via L</html>.
+
+=head3 stdout( [ \*FH ] )
+
+A filehandle for catching standard output.  Defaults to C<STDOUT>.
+
+=head3 escape_output( [ $boolean ] )
+
+If set, all output to L</stdout> is escaped.  This is probably only useful
+if you're testing the formatter.
+Defaults to C<0>.
+
+=head3 html( [ \$html ] )
+
+This is a reference to the scalar containing the html generated on the last
+test run.  Useful if you have L</silent> on.
+
+=head3 tests( [ \@test_files ] )
+
+A list of test files we're running, set by L<TAP::Parser>.
+
+=head3 session_class( [] )
+
+Class to use for L<TAP::Parser> test sessions.  You probably won't need to use
+this unless you're hacking or sub-classing the formatter.
+Defaults to L<TAP::Formatter::HTML::Session>.
+
+=head3 sessions( [ \@sessions ] )
+
+Test sessions added by L<TAP::Parser>.  You probably won't need to use this
+unless you're hacking or sub-classing the formatter.
+
+=head3 template_processor( [ $processor ] )
+
+The template processor to use.
+Defaults to a TT2 L<Template> processor with the following config:
+
+  COMPILE_DIR  => catdir( tempdir(), 'TAP-Formatter-HTML' ),
+  COMPILE_EXT  => '.ttc',
+  INCLUDE_PATH => join(':', @INC),
+
+=head3 template( [ $file_name ] )
+
+The template file to load.
+Defaults to C<TAP/Formatter/HTML/default_report.tt2>.
+
+=head3 css_uris( [ \@uris ] )
+
+A list of L<URI>s (or strings) to include as external stylesheets in <style>
+tags in the head of the document.
+Defaults to:
+
+  ['file:TAP/Formatter/HTML/default_report.css'];
+
+=head3 js_uris( [ \@uris ] )
+
+A list of L<URI>s (or strings) to include as external stylesheets in <style>
+tags in the head of the document.
+Defaults to:
+
+  ['file:TAP/Formatter/HTML/jquery-1.2.3.pack.js'];
+
+=head3 inline_css( [] )
+
+If set, the formatter will include the CSS code in a <style> tag in the head of
+the document.
+
+=head3 inline_js( [ $javascript ] )
+
+If set, the formatter will include the JavaScript code in a <script> tag in the
+head of the document.
+
+=head3 abs_file_paths( [ $ boolean ] )
+
+If set, the formatter will attempt to convert any relative I<file> JS & css
+URI's listed in L</css_uris> & L</js_uris> to absolute paths.  This is handy if
+you'll be sending moving the HTML output around on your harddisk, (but not so
+handy if you move it to another machine - see L</force_inline_css>).
+Defaults to I<1>.
+
+=head3 force_inline_css( [ $boolean ] )
+
+If set, the formatter will attempt to slurp in any I<file> css URI's listed in
+L</css_uris>, and append them to L</inline_css>.  This is handy if you'll be
+sending the output around - that way you don't have to send a CSS file too.
+Defaults to I<1>.
+
+=head2 $html = $fmt->summary( $aggregator )
+
+C<summary> produces a summary report after all tests are run.  C<$aggregator>
+should be a L<TAP::Parser::Aggregator>.
+
+This calls:
+
+  $fmt->template_processor->process( $params )
+
+Where C<$params> is a data structure containing:
+
+  report      => %test_report
+  js_uris     => @js_uris
+  css_uris    => @js_uris
+  incline_js  => $inline_js
+  inline_css  => $inline_css
+  formatter   => %formatter_info
+
+The C<report> is the most complicated data structure, and will sooner or later
+be documented in L</CUSTOMIZING>.
+
+=head1 CUSTOMIZING
+
+This section is not yet written.  Please look through the code if you want to
+customize the templates, or sub-class.
+
+=head1 BUGS
+
+Please use http://rt.cpan.org to report any issues.
 
 =head1 AUTHOR
 
@@ -470,9 +528,17 @@ Steve Purkis <spurkis@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2008 S Purkis Consulting Ltd.  All rights reserved.
+Copyright (c) 2008 Steve Purkis <spurkis@cpan.org>, S Purkis Consulting Ltd.
+All rights reserved.
 
 This module is released under the same terms as Perl itself.
+
+=head1 SEE ALSO
+
+L<Test::TAP::HTMLMatrix> - the inspiration for this module.  Many good ideas
+were borrowed from it.
+
+L<TAP::Formatter::Console> - the default TAP formatter used by L<TAP::Harness>
 
 =cut
 
