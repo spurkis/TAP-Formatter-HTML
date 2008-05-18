@@ -337,7 +337,6 @@ sub slurp_css {
 sub log {
     my $self = shift;
     push @_, "\n" unless grep {/\n/} @_;
-    unshift @_, '# ' if $self->escape_output;
     $self->_output( @_ );
     return $self;
 }
@@ -367,6 +366,7 @@ sub _output {
 	# printing HTML:
 	print { $self->stdout } ${ $_[0] };
     } else {
+	unshift @_, '# ' if $self->escape_output;
 	print { $self->stdout } @_;
     }
 }
