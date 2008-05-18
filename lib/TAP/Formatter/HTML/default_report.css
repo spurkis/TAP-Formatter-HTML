@@ -5,8 +5,8 @@
  *****************************************************************************/
 
 html {
-  width: 100%;
-  height: 100%;
+	width: 100%;
+	height: 100%;
 }
 
 body {
@@ -20,35 +20,35 @@ body {
 /* The summary bar
  */
 #summary {
-  position: relative;
-  padding: 2px 0 2 0;
-  width: 90%;
-  font-size: x-large;
-  text-align: center;
+	position: relative;
+	padding: 2px 0 2 0;
+	width: 90%;
+	font-size: x-large;
+	text-align: center;
 }
 
 #summary.passed {
-  background-color: #99ff66;
-  border: 1px solid #00ff00;
+	background-color: #99ff66;
+	border: 1px solid #00ff00;
 }
 
 #summary.failed {
-  background-color: #ff6450;
-  border: 1px solid #ff0000;
+	background-color: #ff6450;
+	border: 1px solid #ff0000;
 }
 
 #summary a {
-  width: 100%;
-  display: block;
+	width: 100%;
+	display: block;
 	margin: 0;
 	padding: 0;
-  text-decoration: none;
-  color: #000000;
+	text-decoration: none;
+	color: #000000;
 }
 
 #summary a:hover {
-  text-decoration: none;
-  color: #6666aa;
+	text-decoration: none;
+	color: #6666aa;
 }
 
 
@@ -57,122 +57,122 @@ body {
  * The report detail section
  */
 #detail {
-  margin-top: 5px;
-  width: 90%;
+	margin-top: 5px;
+	width: 90%;
 }
 
 table.detail {
-  width: 100%;
-  border: 1px solid #3333ee;
-  padding: 2px;
-  border-spacing: 0px;
+	width: 100%;
+	border: 1px solid #3333ee;
+	padding: 2px;
+	border-spacing: 0px;
 
 }
 
 table.detail th {
-  border-bottom: 2px solid #3333ee;
-  padding-top: 2px;
+	border-bottom: 2px solid #3333ee;
+	padding-top: 2px;
 }
 
 table.detail tfoot tr td {
-  border-top: 2px solid #3333ee;
-  padding-top: 2px;
+	border-top: 2px solid #3333ee;
+	padding-top: 2px;
 }
 
 table.detail td {
-  position: relative;
-  top: 0px;
-  left: 0px;
-  border-top: 1px solid #aaaaaa;
-  margin: 0;
-  padding: 2px 0 2 0;
-  vertical-align: top;
+	position: relative;
+	top: 0px;
+	left: 0px;
+	border-top: 1px solid #aaaaaa;
+	margin: 0;
+	padding: 2px 0 2 0;
+	vertical-align: top;
 }
 
 /******************************************************************************
  * The file column
  */
 table.detail td.file {
-  width: 10%;
-  padding-left: 2px;
-  padding-right: 4px;
+	width: 10%;
+	padding-left: 2px;
+	padding-right: 4px;
 }
 
 a.file {
-  display: block;
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  text-decoration: none;
-  color: #3333cc;
+	display: block;
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+	text-decoration: none;
+	color: #3333cc;
 }
 
 a.file:hover {
-  text-decoration: none;
-  color: #6666ee;
+	text-decoration: none;
+	color: #6666ee;
 }
 
 a.file:visited {
-  text-decoration: none;
-  color: #3333cc;
+	text-decoration: none;
+	color: #3333cc;
 }
 
 /******************************************************************************
  * The time column
  */
 table.detail td.time {
-  width: 2%;
-  border-left: 1px solid #ddddff;
-  text-align: center;
-  font-size: small;
+	width: 2%;
+	border-left: 1px solid #ddddff;
+	text-align: center;
+	font-size: small;
 }
 
 /******************************************************************************
  * The percentage column
  */
 table.detail td.percent {
-  padding-left: 2px;
-  padding-right: 2px;
-  width: 2%;
-  text-align: center;
-  font-size: small;
-  vertical-align: middle;
+	padding-left: 2px;
+	padding-right: 2px;
+	width: 2%;
+	text-align: center;
+	font-size: small;
+	vertical-align: middle;
 }
 
 table.detail td.passed {
-  border: 1px solid #99cc99;
-  background-color: #99ff66;
+	border: 1px solid #99cc99;
+	background-color: #99ff66;
 }
 
 table.detail td.todo-passed {
-  border: 1px solid #99cc99;
-  background-color: #ddffbb;
+	border: 1px solid #99cc99;
+	background-color: #ddffbb;
 }
 
 table.detail td.severity-very-low {
-  border: 1px solid #ffee33;
-  background-color: #ffffaa;
+	border: 1px solid #ffee33;
+	background-color: #ffffaa;
 }
 
 table.detail td.severity-low {
-  border: 1px solid #eecc33;
-  background-color: #ffdd99;
+	border: 1px solid #eecc33;
+	background-color: #ffdd99;
 }
 
 table.detail td.severity-med {
-  border: 1px solid #dd6633;
-  background-color: #ffaa77;
+	border: 1px solid #dd6633;
+	background-color: #ffaa77;
 }
 
 table.detail td.severity-high {
-  border: 1px solid #ff3333;
-  background-color: #ff8866;
+	border: 1px solid #ff3333;
+	background-color: #ff8866;
 }
 
 table.detail td.severity-very-high {
-  border: 1px solid #ff0000;
-  background-color: #ff6450;
+	border: 1px solid #ff0000;
+	background-color: #ff6450;
 }
 
 /******************************************************************************
@@ -184,64 +184,64 @@ table.detail td.severity-very-high {
  */
 
 table.test-summary {
-  clear: both;
-  width: 100%;
-  height: 10px;
-  font-size: 8px; /* safari wants this less than 10px */
+	clear: both;
+	width: 100%;
+	height: 10px;
+	font-size: 8px; /* safari wants this less than 10px */
 	margin: 0px;
-  margin-bottom: 4px;
+	margin-bottom: 4px;
 	padding: 0;
-  border-spacing: 1px;
+	border-spacing: 1px;
 }
 
 table.test-summary td {
-  margin: 0;
+	margin: 0;
 	padding: 0;
-  height: 10px;
+	height: 10px;
 }
 
 table.test-summary td a {
-  display: block;
+	display: block;
 	margin: 0;
 	padding: 0;
-  text-decoration: none;
-  width: 100%;
-  height: 100%;
+	text-decoration: none;
+	width: 100%;
+	height: 100%;
 }
 
 /* base for passed/failed (should always be lower precedent in class list!) */
 table.test-summary td.passed {
-  border: 1px solid #66cc33;
-  background-color: #99ff66;
+	border: 1px solid #66cc33;
+	background-color: #99ff66;
 }
 
 table.test-summary td.failed {
-  border: 1px solid #ff0000;
-  background-color: #ff6450;
+	border: 1px solid #ff0000;
+	background-color: #ff6450;
 }
 
 /* overrides for specific outcomes */
 table.test-summary td.ok {
-  border: 1px solid #66cc33;
+	border: 1px solid #66cc33;
 }
 
 table.test-summary td.not-ok {
-  border: 1px solid #ff0000;
+	border: 1px solid #ff0000;
 }
 
 table.test-summary td.todo-ok {
-  border: 1px solid #eeaa00;
-  background-color: #ffcc00;
+	border: 1px solid #eeaa00;
+	background-color: #ffcc00;
 }
 
 table.test-summary td.skip-ok {
-  border: 1px solid #99d999;
-  background-color: #99cc66;
+	border: 1px solid #99d999;
+	background-color: #99cc66;
 }
 
 table.test-summary td.todo-not-ok {
-  border: 1px solid #99cc99;
-  background-color: #ddffbb;
+	border: 1px solid #99cc99;
+	background-color: #ddffbb;
 }
 
 /******************************************************************************
@@ -250,7 +250,7 @@ table.test-summary td.todo-not-ok {
 div.test-detail {
 	margin: 0;
 	padding: 0;
-/*  display: none; /* by default */
+/*	display: none; /* let JS handle this... */
 }
 
 /******************************************************************************
@@ -259,13 +259,13 @@ div.test-detail {
 ul.parse-errors {
 	margin: 0;
 	padding: 0;
-  clear: left;
+	clear: left;
 }
 
 ul.parse-errors li {
 	margin-left: 4px;
 	list-style: none;
-  color: red;
+	color: red;
 }
 
 /******************************************************************************
@@ -274,7 +274,7 @@ ul.parse-errors li {
 ul.test-out {
 	margin: 0;
 	padding: 0;
-  clear: left;
+	clear: left;
 }
 
 ul.test-out li {
@@ -284,47 +284,47 @@ ul.test-out li {
 }
 
 ul.test-out li.test {
-  ;
+	;
 }
 
 ul.test-out li.comment {
-  color: #666666;
-  font-family: monospace;
+	color: #666666;
+	font-family: monospace;
 }
 
 ul.test-out li.plan {
-  color: blue;
+	color: blue;
 }
 
 ul.test-out li.ok {
-  ;
+	;
 }
 
 ul.test-out li.todo-ok {
-  color: #cc3333;
+	color: #cc3333;
 }
 
 ul.test-out li.todo-not-ok {
-  color: #773322;
+	color: #773322;
 }
 
 ul.test-out li.not-ok {
-  color: #ff0000;
+	color: #ff0000;
 }
 
 ul.test-out li.unplanned {
-  color: #ff0000;
+	color: #ff0000;
 }
 
 ul.test-out li.skip {
-  color: #001111;
+	color: #001111;
 }
 
 ul.test-out li.unknown {
-  color: #996600;
-  font-family: monospace;
+	color: #996600;
+	font-family: monospace;
 }
 
 ul.test-out li.exit-status {
-  color: #ff0000;
+	color: #ff0000;
 }
