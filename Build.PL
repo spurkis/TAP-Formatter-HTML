@@ -35,6 +35,10 @@ my $build = Module::Build->new
 
   );
 
+$build->add_build_element("tt2");
+$build->add_build_element("css");
+$build->add_build_element("js");
+
 $build->create_build_script;
 
 

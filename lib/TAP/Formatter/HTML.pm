@@ -1,17 +1,18 @@
 =head1 NAME
 
-TAP::Formatter::HTML - Harness output delegate for html output
+TAP::Formatter::HTML - TAP Test Harness output delegate for html output
 
 =head1 SYNOPSIS
 
  use TAP::Harness;
- # assuming you want stderr too:
+
+ my @tests = glob( 't/*.t' );
  my $harness = TAP::Harness->new({ formatter_class => 'TAP::Formatter::HTML',
                                    merge => 1 });
  $harness->runtests( @tests );
- # prints to stdout
+ # prints HTML to STDOUT by default
 
- # otherwise:
+ # or if you don't want STDERR merged in:
  my $harness = TAP::Harness->new({ formatter_class => 'TAP::Formatter::HTML' });
 
  # to use a custom formatter:

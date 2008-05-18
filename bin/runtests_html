@@ -1,0 +1,13 @@
+#!/usr/local/bin/perl
+
+use TAP::Harness;
+use TAP::Formatter::HTML;
+
+my @tests = @_;
+@tests = glob( 't/*.t' ) unless @tests;
+
+my $fmt = TAP::Formatter::HTML->new({ really_quiet => 1 });
+my $harness = TAP::Harness->new({ formatter => $fmt, merge => 1 });
+$harness->runtests( @tests );
+# prints HTML to STDOUT by default
+
