@@ -23,12 +23,25 @@ use File::Temp qw( tempfile tempdir );
 use File::Spec::Functions qw( catdir );
 
 use Template;
-#use Template::Plugin::Cycle;
 
 use base qw( TAP::Base );
-use accessors qw( verbosity tests session_class sessions template template_file css_uri js_uri );
+use accessors qw( verbosity tests session_class sessions template template_file
+		  css_uris js_uris inline_css inline_js );
 
 use constant default_session_class => 'TAP::Formatter::HTML::Session';
+use constant default_template      => 'test-results.tt2';
+use constant default_js_uris       => ['t/data/jquery-1.2.3.pack.js'];
+use constant default_css_uris      => ['t/data/test-results.css'];
+use constant default_inline_js     => '';
+use constant default_inline_css    => '';
+use constant default_template_processor =>
+  Template->new(
+		COMPILE_DIR  => catdir( tempdir(), "TAP-Formatter-HTML-$$" ),
+		COMPILE_EXT  => '.ttc',
+		INCLUDE_PATH => catdir(qw( t data )), # DEBUG
+		EVAL_PERL    => 1, # DEBUG
+	       );
+
 use constant severity_map => {
 			      ''          => 0,
 			      'very-low'  => 1,
@@ -56,20 +69,14 @@ sub _initialize {
     $self->SUPER::_initialize($args);
     $self->verbosity( 0 )
          ->session_class( $self->default_session_class )
-         ->template( $self->create_template_processor )
-         ->template_file( 'test-results.tt2' );
+         ->template( $self->default_template_processor )
+         ->template_file( $self->default_template )
+         ->js_uris( $self->default_js_uris )
+         ->css_uris( $self->default_css_uris )
+         ->inline_js( $self->default_inline_js )
+	 ->inline_css( $self->default_inline_css );
 
     return $self;
-}
-
-sub create_template_processor {
-    my ($self) = @_;
-    return Template->new(
-			 COMPILE_DIR  => catdir( tempdir(), "TAP-Formatter-HTML-$$" ),
-			 COMPILE_EXT  => '.ttc',
-			 INCLUDE_PATH => catdir(qw( t data )), # DEBUG
-			 EVAL_PERL    => 1, # DEBUG
-			);
 }
 
 sub verbose      { shift->verbosity >=  1 }
@@ -118,7 +125,14 @@ sub summary {
 
 sub generate_report {
     my ($self, $r) = @_;
-    return $self->template->process( $self->template_file, { report => $r } )
+    my $params = {
+		  report => $r,
+		  js_uris  => $self->js_uris,
+		  css_uris => $self->css_uris,
+		  incline_js  => $self->inline_js,
+		  inline_css => $self->inline_css,
+		 };
+    return $self->template->process( $self->template_file, $params )
       || die $self->template->error;
 }
 
@@ -132,8 +146,6 @@ sub prepare_report {
 	     elapsed_time => $a->elapsed_timestr,
 	    };
 
-    $r->{css_uri} = $self->css_uri;
-    $r->{js_uri}  = $self->js_uri;
 
     # add aggregate test info:
     for my $key (qw(
@@ -199,7 +211,7 @@ use strict;
 use warnings;
 
 use base qw( TAP::Base );
-use accessors qw( test parser results meta closed );
+use accessors qw( test parser results html_id meta closed );
 
 # DEBUG:
 use Data::Dumper 'Dumper';
@@ -215,6 +227,11 @@ sub _initialize {
 	$self->$arg($args->{$arg}) if defined $args->{$arg};
     }
 
+    # make referring to it in HTML easy:
+    my $html_id = $self->test;
+    $html_id    =~ s/[^a-zA-Z\d-]/-/g;
+    $self->html_id( $html_id );
+
     $self->log( $self->test, ':' );
 
     return $self;
@@ -227,6 +244,9 @@ sub result {
     $self->log( $result->as_string );
 
     if ($result->is_test) {
+	# make referring to it in HTML easy:
+	$result->{html_id} = $self->html_id . '-' . $result->number;
+
 	# set this to avoid the hassle of recalculating it in the template:
 	$result->{test_status}  = $result->has_todo ? 'todo-' : '';
 	$result->{test_status} .= $result->has_skip ? 'skip-' : '';

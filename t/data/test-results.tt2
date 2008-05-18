@@ -1,3 +1,8 @@
+[%#
+TAP-Formatter-HTML: TT2 Template
+Copyright (c) 2008 Steve Purkis.  All rights reserved.
+Released under the same terms as Perl itself.
+-%]
 <html>
 	<head>
 		<title>[% report.title || 'Test Report' %]</title>
@@ -89,15 +94,19 @@ table.detail td {
  * The file column
  */
 table.detail td.file {
+  width: 10%;
+  padding-left: 2px;
+  padding-right: 4px;
 }
 
 a.file {
   display: block;
   margin: 0;
   padding: 0;
-  text-decoration: none;
   width: 100%;
   height: 100%;
+  text-decoration: none;
+  color: #3333cc;
 }
 
 a.file:hover {
@@ -105,10 +114,16 @@ a.file:hover {
   color: #6666ee;
 }
 
+a.file:visited {
+  text-decoration: none;
+  color: #3333cc;
+}
+
 /******************************************************************************
  * The time column
  */
 table.detail td.time {
+  width: 2%;
   border-left: 1px solid #ddddff;
   text-align: center;
   font-size: small;
@@ -118,6 +133,9 @@ table.detail td.time {
  * The percentage column
  */
 table.detail td.percent {
+  padding-left: 2px;
+  padding-right: 2px;
+  width: 2%;
   text-align: center;
   font-size: small;
   vertical-align: middle;
@@ -302,14 +320,68 @@ ul.test-out li.exit-status {
   color: #ff0000;
 }
 		</style>
+		[% FOREACH uri IN css_uris %]<link rel="stylesheet" type="text/css" href="[% uri %]" />[% END %]
+		[% FOREACH uri IN js_uris %]<script type="text/javascript" src="[% uri %]"></script>[% END %]
+		[%- IF inline_css %]
+		<style type="text/css">
+[% inline_css %]
+		</style>
+		[%- END -%]
+		[%- IF inline_js %]
+		<script type="text/javascript">
+[% inline_js %]
+		</script>
+		[%- END %]
+
+		<script type="text/javascript">
+// temporary hack, move external
+jQuery.fn.extend({
+  scrollTo : function(speed, easing) {
+    return this.each(function() {
+      var targetOffset = $(this).offset().top;
+      $('html,body').animate({scrollTop: targetOffset}, speed, easing);
+    });
+  }
+});
+
+$(document).ready(function(){
+	$("div.test-detail").hide();
+	$("div.summary").find("a").click(function(){return false;});
+
+	// expand test detail when user clicks on a test file
+	$("a.file").click(function(){
+		// go all the way to the tr incase table structure changes:
+		$(this).parents("tr:first").find("div.test-detail").slideToggle();
+		return false;
+	});
+
+	// expand test detail when user clicks on an individual test
+	$("a.test-summary").click(function(){
+		var testId = $(this).attr("href")
+		// go all the way to the tr incase table structure changes:
+		var $detail = $(this).parents("td.results").parents("tr:first").find("div.test-detail");
+		$detail.filter(":hidden").slideDown();
+		var $testElem = $detail.find(testId);
+		$testElem.show().scrollTo(1000);
+		var bgColor = $testElem.css("background-color");
+		$testElem.css({ backgroundColor: "yellow" });
+		// shame you can't animate bg color w/o a plugin...
+		setTimeout(function(){$testElem.css({ backgroundColor: bgColor })}, 3000);
+		return false;
+	});
+});
+		</script>
+
 	</head>
 	<body>
 		[% IF report.has_errors %][% SET status = 'failed' %][% ELSE %][% SET status = 'passed' %][% END -%]
 		<div id="summary" class="[% status %]">
 			<a href="#" title="Test Summary ([% report.percent_passed %]% ok)
+[% IF report.severity %]	severity: [% report.severity %]
+[% END -%]
 	passed [% report.passed %]/[% report.total %] tests in [% report.num_files %] files
 	total time: [% report.total_time | format('%.2fs') %]
-	[% report.elapsed_time %]">[% status FILTER upper %]</a>
+	[% report.elapsed_time | trim %]">[% status FILTER upper %]</a>
 		</div>
 
 		<div id="detail">
@@ -324,21 +396,20 @@ ul.test-out li.exit-status {
 				</thead>
 				<tbody>
 					[%- FOREACH test IN report.tests %]
-					<tr id="[% test.test %]" class="test-run [% test.test_status %]">
+					<tr id="[% test.html_id %]" class="test-run [% test.test_status %]">
 						<td class="file">
-							<a class="file" href="#" title="Test overview:            
-	[% test.tests_planned || 0 %] planned, [% test.tests_run || 0 %] run
-[% IF test.has_problems %]	has problems!
+							<a class="file" href="#" title="Test [% IF test.has_problems %]failed![% ELSE %]ok.[% END %]
+[% IF test.num_parse_errors %]	[% test.num_parse_errors %] parse error(s)!
 [% END -%]
-[% IF test.num_parse_errors %]	has parse errors!
+[% IF test.exit || test.wait %]	did not exit cleanly!
 [% END -%]
 [% IF test.skip_all %]	skipped all
+[% ELSE -%]
+[% IF test.todo_passed %]	some todo tests unexpectedly passed!
 [% END -%]
+	[% test.tests_planned || 0 %] planned, [% test.tests_run || 0 %] run
 	[% test.passed || 0 %] ok, [% test.failed || 0 %] failed
 	[% test.todo || 0 %] todo, [% test.skipped || 0 %] skipped
-[% IF test.todo_failed %]	some todo tests failed
-[% END -%]
-[% IF test.todo_passed %]	some todo tests unexpectedly passed!
 [% END -%]
 	exit status: [% test.exit %]
 	wait status: [% test.wait %]">[% test.test %]</a>
@@ -347,18 +418,20 @@ ul.test-out li.exit-status {
 							[%- SET max_tests = 0 -%]
 							[%- SET max_tests = test.tests_planned IF test.tests_planned AND test.tests_planned > max_tests -%]
 							[%- SET max_tests = test.tests_run IF test.tests_run AND test.tests_run > max_tests %]
-							<table class="test-summary">[%# Note: use a table to caulculate widths automatically -%]
-								[%- IF test.tests_run AND test.tests_run > 0 -%]
-								  [%- FOREACH result IN test.results -%]
-						        [%- IF result.is_test %]
-								    <td class="test [% result.test_status %]"><a href="#[% test.test _ '-' _ result.test_num %]" title="[% result.raw | html %]">&nbsp;</a></td>
+							<table class="test-summary">[%# Note: use a table to caulculate widths automatically %]
+								<tr>
+									[%- IF test.tests_run AND test.tests_run > 0 -%]
+									  [%- FOREACH result IN test.results -%]
+									  [%- IF result.is_test %]
+									  <td class="test [% result.test_status %]"><a class="test-summary" href="#[% result.html_id %]" title="[% result.raw | html %]">&nbsp;</a></td>
 								    [%- END -%]
-								  [%- END -%]
-								[%- ELSIF test.skip_all -%]
-								<td class="skip-ok" width="100%"><a href="#" title="[% test.results.first.raw | html %]">&nbsp;</a></td>
-								[%- ELSE -%]
-								<td class="stub not-ok" width="100%"><a href="#" title="No tests run!">&nbsp;</a></td>
-								[%- END %]
+										[%- END -%]
+									[%- ELSIF test.skip_all -%]
+									<td class="skip-ok" width="100%"><a href="#" title="[% test.results.first.raw | html %]">&nbsp;</a></td>
+									[%- ELSE -%]
+									<td class="stub not-ok" width="100%"><a href="#" title="No tests run!">&nbsp;</a></td>
+									[%- END %]
+								</tr>
 							</table>
 							<div class="test-detail">
 								[%- IF test.parse_errors %]
@@ -370,7 +443,7 @@ ul.test-out li.exit-status {
 								[%- END %]
 								<ul class="test-out">
 									[%- FOREACH result IN test.results %]
-									<li [% IF result.is_test %]id="[% test.test _ '-' _ result.test_num %]"[% END -%]
+									<li [% IF result.is_test %]id="[% result.html_id %]"[% END -%]
 											class="[% result.type -%]
 														 [%- IF result.is_test %][% ' ' _ result.test_status -%][%- END -%]
 														 [%- IF result.is_unplanned %] unplanned[% END %]">[% result.raw | html -%][% IF result.is_unplanned %]<em> (unplanned)</em>[% END %]</li>
@@ -402,7 +475,7 @@ ul.test-out li.exit-status {
 							[% report.parse_errors %] parse errors<br/>
 							exit status: [% report.exit %],
 							wait status: [% report.wait %]<br/>
-							elapsed time: [% report.elapsed_time %]</td>
+							elapsed time: [% report.elapsed_time | trim %]</td>
 						<td class="time">[% report.total_time | format('%.2fs') %]</td>
 						<td class="percent [% report.test_status -%]
 											 [%- IF report.severity %][% ' severity-' _ report.severity %][% END -%]
