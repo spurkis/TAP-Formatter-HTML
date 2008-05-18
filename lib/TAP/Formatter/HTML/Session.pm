@@ -1,3 +1,13 @@
+=head1 NAME
+
+TAP::Formatter::HTML::Session - TAP Test Harness output delegate for html output
+
+=head1 SYNOPSIS
+
+ # see TAP::Formatter::HTML
+
+=cut
+
 package TAP::Formatter::HTML::Session;
 
 use strict;
@@ -7,7 +17,7 @@ use base qw( TAP::Base );
 use accessors qw( test formatter parser results html_id meta closed );
 
 # DEBUG:
-use Data::Dumper 'Dumper';
+#use Data::Dumper 'Dumper';
 
 sub _initialize {
     my ($self, $args) = @_;
@@ -163,3 +173,39 @@ sub info {
 
 
 1;
+
+__END__
+
+
+=head1 DESCRIPTION
+
+This module is part of L<TAP::Formatter::HTML>, which provides HTML output
+formatting for L<TAP::Harness>.  It handles individual test I<sessions>, eg.
+output from an individual test script.
+
+As documentation is a bit sparse at the moment, you'll need to read the source
+if you need to inherit/hack on the module at all.
+
+=head1 BUGS
+
+Please use http://rt.cpan.org to report any issues.
+
+=head1 AUTHOR
+
+Steve Purkis <spurkis@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (c) 2008 Steve Purkis <spurkis@cpan.org>, S Purkis Consulting Ltd.
+All rights reserved.
+
+This module is released under the same terms as Perl itself.
+
+=head1 SEE ALSO
+
+L<TAP::Formatter::HTML>
+
+L<TAP::Formatter::Console::Session> - the default TAP formatter used by L<TAP::Harness>
+
+=cut
+

@@ -15,7 +15,6 @@ Build.PL - Build script generator for C<TAP::Formatter::HTML> module
 
 use strict;
 use warnings;
-use File::Spec;
 use Module::Build;
 
 my $build = Module::Build->new
@@ -26,13 +25,15 @@ my $build = Module::Build->new
    create_readme      => 1,
    license            => 'perl',
    requires           => {
-			  'perl' => '5.6.0',
+			  'perl'        => '5.6.0',
+			  'URI'         => '1.35',
+			  'Template'    => '2.14',
+			  'TAP::Parser' => '3.10',
 		         },
    build_requires     => {
 			  'Test::More'    => '0.01',
 			  'Module::Build' => '0.20',
 		         },
-
   );
 
 $build->add_build_element("tt2");

@@ -4,6 +4,10 @@ TAP::Formatter::HTML - TAP Test Harness output delegate for html output
 
 =head1 SYNOPSIS
 
+ # cmdline usage:
+ % prove -m -Q --formatter=TAP::Formatter::HTML >output.html
+
+ # perl usage:
  use TAP::Harness;
 
  my @tests = glob( 't/*.t' );
@@ -12,7 +16,7 @@ TAP::Formatter::HTML - TAP Test Harness output delegate for html output
  $harness->runtests( @tests );
  # prints HTML to STDOUT by default
 
- # or if you don't want STDERR merged in:
+ # or if you really don't want STDERR merged in:
  my $harness = TAP::Harness->new({ formatter_class => 'TAP::Formatter::HTML' });
 
  # to use a custom formatter:
@@ -380,11 +384,61 @@ __END__
 
 =head1 DESCRIPTION
 
-This provides html output formatting for TAP::Harness.
+This module provides HTML output formatting for L<TAP::Harness> (a replacement
+for L<Test::Harness>.  It is largely based on ideas from
+L<TAP::Test::HTMLMatrix> (which was built on L<Test::Harness> and thus had a
+from a few limitations - hence this module).
 
-Documentation is rather sparse at the moment.
+This module is targeted at all users of automated test suites.  It is meant to
+make testing easier & more useful (and hopefully more likely to happen at your
+organization ;-).
 
-=cut
+The design goals are:
+
+=over 4
+
+=item *
+
+I<easy to use>
+
+Once you've got your test report, it should be obvious how to use it.
+
+=item *
+
+I<helpful>
+
+It should be helpful by pointing out I<where> & I<why> your test suite is
+breaking.  If you've written your tests well, it should give you enough info to
+start tracking down the issue.
+
+=item *
+
+I<easy to install>
+
+Eg: should be a clean install from CPAN, and you shouldn't need to modify your
+existing test suite to get up & running, though I<you will need to stop using
+L<Test::Harness> unfortunately>.
+
+=item *
+
+I<work out of the box>
+
+You shouldn't need to do any custom-coding to get it working - the default
+configuration & templates should be enough to get started with.  Once installed
+it should be a matter of running:
+
+ % prove -m -Q --formatter=TAP::Formatter::HTML >output.html
+
+From your project's home dir, and opening the resulting file.
+
+=item *
+
+I<easy to configure>
+
+You should be able to configure & customize it to suit your needs.  As such,
+css, javascript and templates are all configurable.
+
+=back
 
 =head1 METHODS
 
@@ -468,7 +522,7 @@ Defaults to:
 
   ['file:TAP/Formatter/HTML/jquery-1.2.3.pack.js'];
 
-=head3 inline_css( [] )
+=head3 inline_css( [ $css ] )
 
 If set, the formatter will include the CSS code in a <style> tag in the head of
 the document.
@@ -535,6 +589,10 @@ All rights reserved.
 This module is released under the same terms as Perl itself.
 
 =head1 SEE ALSO
+
+Examples in the C<examples> directory.
+
+L<prove> - L<TAP::Harness>'s new cmdline utility.  It's great, use it!
 
 L<Test::TAP::HTMLMatrix> - the inspiration for this module.  Many good ideas
 were borrowed from it.

@@ -1,5 +1,13 @@
+Give the test suite a title...
+
 More tests!
+ * parse the generated output
+ * check the view given to the TT view
 
-wrap unknown's in <pre>
+wrap unknown test output's in <pre>
 
+expand all tests
+expand failed tests
 
+support file output
+   * but how to integrate into prove?

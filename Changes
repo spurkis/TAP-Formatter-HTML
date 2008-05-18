@@ -3,5 +3,10 @@ Revision history for 'TAP-Formatter-HTML' Perl module
 
 All changes by Steve Purkis, unless otherwise noted.
 
+0.02
+    +	updated deps in Build.PL
+    +	wrote more docs, fixed a few errors & omissions
+    -	removed bin/runtests_html (it was added before I found out about 'prove')
+
 0.01
     +	created Thurs May 14 2008
