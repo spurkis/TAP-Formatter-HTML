@@ -81,7 +81,7 @@ use constant severity_map => {
 			      5 => 'very-high',
 			     };
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub _initialize {
     my ($self, $args) = @_;
@@ -391,9 +391,10 @@ from a few limitations - hence this module).  For sample output, see:
 
 L<http://www.spurkis.org/TAP-Formatter-HTML/test-output.html>
 
-This module is targeted at all users of automated test suites.  It is meant to
-make testing easier & more useful (and hopefully more likely to happen at your
-organization ;-).
+This module is targeted at all users of automated test suites.  It's meant to
+make reading test results easier, giving you a visual summary of your test suite
+and letting you drill down into individual failures (which will hopefully make
+testing more likely to happen at your organization ;-).
 
 The design goals are:
 

@@ -13,11 +13,13 @@ package TAP::Formatter::HTML::Session;
 use strict;
 use warnings;
 
+# DEBUG:
+#use Data::Dumper 'Dumper';
+
 use base qw( TAP::Base );
 use accessors qw( test formatter parser results html_id meta closed );
 
-# DEBUG:
-#use Data::Dumper 'Dumper';
+our $VERSION = '0.02';
 
 sub _initialize {
     my ($self, $args) = @_;
