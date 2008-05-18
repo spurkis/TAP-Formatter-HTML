@@ -61,7 +61,6 @@ table.detail {
   width: 100%;
   border: 1px solid #3333ee;
   padding: 2px;
-/*  border-collapse: collapse; */
   border-spacing: 0px;
 
 }
@@ -71,27 +70,62 @@ table.detail th {
   padding-top: 2px;
 }
 
+table.detail tfoot tr td {
+  border-top: 2px solid #3333ee;
+  padding-top: 2px;
+}
+
 table.detail td {
   position: relative;
   top: 0px;
   left: 0px;
   border-top: 1px solid #aaaaaa;
+  margin: 0;
+  padding: 2px 0 2 0;
+  vertical-align: top;
 }
 
-table.detail tfoot tr td {
-  border-top: 1px solid #3333ee;
+/******************************************************************************
+ * The file column
+ */
+table.detail td.file {
 }
 
+a.file {
+  display: block;
+  margin: 0;
+  padding: 0;
+  text-decoration: none;
+  width: 100%;
+  height: 100%;
+}
+
+a.file:hover {
+  text-decoration: none;
+  color: #6666ee;
+}
+
+/******************************************************************************
+ * The time column
+ */
 table.detail td.time {
+  border-left: 1px solid #ddddff;
   text-align: center;
   font-size: small;
 }
 
+/******************************************************************************
+ * The percentage column
+ */
 table.detail td.percent {
+  text-align: center;
+  font-size: small;
+  vertical-align: middle;
+}
+
+table.detail td.passed {
   border: 1px solid #99cc99;
   background-color: #99ff66;
-  text-align: center;
-  font-size: small;
 }
 
 table.detail td.todo-passed {
@@ -124,60 +158,32 @@ table.detail td.severity-very-high {
   background-color: #ff6450;
 }
 
-a.file {
-  display: block;
-  margin: 0;
-  padding: 0;
-  text-decoration: none;
-  width: 100%;
-  height: 100%;
-}
+/******************************************************************************
+ * The test run column
+ */
 
-a.file:hover {
-  text-decoration: none;
-  color: #6666ee;
-}
+/******************************************************************************
+ * Test summaries
+ */
 
-div.test-run {
-  position: relative;
-  margin-top: 10px;
-  border-top: 1px dashed blue;
-}
-
-div.test-run div.file {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-}
-
-div.test-run div.results {
-  position: absolute;
-  top: 0px;
-  left: 100px;
-}
-
-div.test-run div.percent {
-  position: absolute;
-  top: 0px;
-  left: 500px;
-}
-
-ul.test-summary {
+table.test-summary {
   clear: both;
-	margin: 0;
-	padding: 0;
-}
-
-ul.test-summary li {
-  float: left;
-	margin-left: 1;
-	padding: 0;
-  width: 15px;
+  width: 100%;
   height: 10px;
-	list-style: none;
+  font-size: 8px; /* safari wants this less than 10px */
+	margin: 0px;
+  margin-bottom: 4px;
+	padding: 0;
+  border-spacing: 1px;
 }
 
-ul.test-summary li a {
+table.test-summary td {
+  margin: 0;
+	padding: 0;
+  height: 10px;
+}
+
+table.test-summary td a {
   display: block;
 	margin: 0;
 	padding: 0;
@@ -186,39 +192,43 @@ ul.test-summary li a {
   height: 100%;
 }
 
-ul.test-summary li.ok {
+table.test-summary td.ok {
   border: 1px solid #66cc33;
   background-color: #99ff66;
 }
 
-ul.test-summary li.todo-ok {
+table.test-summary td.todo-ok {
   border: 1px solid #eeaa00;
   background-color: #ffcc00;
 }
 
-ul.test-summary li.skip-ok {
+table.test-summary td.skip-ok {
   border: 1px solid #99d999;
   background-color: #99cc66;
 }
 
-ul.test-summary li.not-ok {
+table.test-summary td.not-ok {
   border: 1px solid #ff0000;
   background-color: #ff6450;
 }
 
-ul.test-summary li.todo-not-ok {
+table.test-summary td.todo-not-ok {
   border: 1px solid #99cc99;
   background-color: #ddffbb;
 }
 
-/* test detail */
+/******************************************************************************
+ * Test detail
+ */
 div.test-detail {
 	margin: 0;
 	padding: 0;
 /*  display: none; /* by default */
 }
 
-/* parse errors */
+/******************************************************************************
+ * Test parse errors
+ */
 ul.parse-errors {
 	margin: 0;
 	padding: 0;
@@ -231,7 +241,9 @@ ul.parse-errors li {
   color: red;
 }
 
-/* the test output */
+/******************************************************************************
+ * Test output
+ */
 ul.test-out {
 	margin: 0;
 	padding: 0;
@@ -258,8 +270,7 @@ ul.test-out li.plan {
 }
 
 ul.test-out li.ok {
-  /* green-ish, prolly not necessary */
-/*  background-color: #eeffee; */
+  ;
 }
 
 ul.test-out li.todo-ok {
@@ -336,20 +347,19 @@ ul.test-out li.exit-status {
 							[%- SET max_tests = 0 -%]
 							[%- SET max_tests = test.tests_planned IF test.tests_planned AND test.tests_planned > max_tests -%]
 							[%- SET max_tests = test.tests_run IF test.tests_run AND test.tests_run > max_tests %]
-							<ul class="test-summary">
+							<table class="test-summary">[%# Note: use a table to caulculate widths automatically -%]
 								[%- IF test.tests_run AND test.tests_run > 0 -%]
-								[%- SET result_width = (95 / test.tests_run) -%]
 								  [%- FOREACH result IN test.results -%]
 						        [%- IF result.is_test %]
-								    <li class="test [% result.test_status %]" style="width: [% result_width | format('%d') %]%"><a href="#[% test.test _ '-' _ result.test_num %]" title="[% result.raw | html %]">&nbsp;</a></li>
+								    <td class="test [% result.test_status %]"><a href="#[% test.test _ '-' _ result.test_num %]" title="[% result.raw | html %]">&nbsp;</a></td>
 								    [%- END -%]
 								  [%- END -%]
 								[%- ELSIF test.skip_all -%]
-								<li class="skip-ok" style="width: 95%"><a href="#" title="[% test.results.first.raw | html %]">&nbsp;</a></li>
+								<td class="skip-ok" width="100%"><a href="#" title="[% test.results.first.raw | html %]">&nbsp;</a></td>
 								[%- ELSE -%]
-								<li class="stub not-ok" style="width: 95%"><a href="#" title="No tests run!">&nbsp;</a></li>
+								<td class="stub not-ok" width="100%"><a href="#" title="No tests run!">&nbsp;</a></td>
 								[%- END %]
-							</ul>
+							</table>
 							<div class="test-detail">
 								[%- IF test.parse_errors %]
 								<ul class="parse-errors">
@@ -360,7 +370,7 @@ ul.test-out li.exit-status {
 								[%- END %]
 								<ul class="test-out">
 									[%- FOREACH result IN test.results %]
-									<li [% IF test.is_test %]id="[% test.test _ '-' _ result.test_num %]"[% END -%]
+									<li [% IF result.is_test %]id="[% test.test _ '-' _ result.test_num %]"[% END -%]
 											class="[% result.type -%]
 														 [%- IF result.is_test %][% ' ' _ result.test_status -%][%- END -%]
 														 [%- IF result.is_unplanned %] unplanned[% END %]">[% result.raw | html -%][% IF result.is_unplanned %]<em> (unplanned)</em>[% END %]</li>
@@ -372,7 +382,8 @@ ul.test-out li.exit-status {
 							</div>
 						</td>
 						<td class="time">[% test.elapsed_time | format('%.2fs') %]</td>
-						<td class="percent[%- IF test.severity %][% ' severity-' _ test.severity %][% END -%]
+						<td class="percent [% test.test_status -%]
+											 [%- IF test.severity %][% ' severity-' _ test.severity %][% END -%]
 											 [%- IF test.todo_passed %] todo-passed[% END %]">[% IF test.percent_passed -%]
 							[%- test.percent_passed %]%[% ELSE %]n/a[% END %]</td>
 					</tr>
@@ -387,24 +398,27 @@ ul.test-out li.exit-status {
 							[% report.passed %] ok,
 							[% report.failed %] failed,
 							[% report.todo %] todo,
-							[% report.skipped %] skipped <br/>
-							[% report.parse_errors %] parse errors,
+							[% report.skipped %] skipped,
+							[% report.parse_errors %] parse errors<br/>
 							exit status: [% report.exit %],
-							wait status: [% report.wait %]</td>
+							wait status: [% report.wait %]<br/>
+							elapsed time: [% report.elapsed_time %]</td>
 						<td class="time">[% report.total_time | format('%.2fs') %]</td>
-						<td class="percent">[% report.percent_passed %]%</td>
+						<td class="percent [% report.test_status -%]
+											 [%- IF report.severity %][% ' severity-' _ report.severity %][% END -%]
+											 [%- IF report.todo_passed %] todo-passed[% END %]">[% report.percent_passed %]%</td>
 					</tr>
 				</tfoot>
 			</table>
 		</div>
 
-		<div class="elapsed_time">elapsed time: [% report.elapsed_time %]</div>
+		<div class="elapsed_time"></div>
 
 		<xmp>
-[% PERL %]
+[ % PERL %]
 use Data::Dumper;
 print "report: " . Dumper( $stash->get( 'report' ) );
-[% END %]
+[ % END %]
 		</xmp>
 	</body>
 </html>

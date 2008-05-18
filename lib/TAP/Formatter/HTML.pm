@@ -18,6 +18,7 @@ package TAP::Formatter::HTML;
 use strict;
 use warnings;
 
+use POSIX qw( ceil );
 use File::Temp qw( tempfile tempdir );
 use File::Spec::Functions qw( catdir );
 
@@ -28,6 +29,20 @@ use base qw( TAP::Base );
 use accessors qw( verbosity tests session_class sessions template template_file css_uri js_uri );
 
 use constant default_session_class => 'TAP::Formatter::HTML::Session';
+use constant severity_map => {
+			      ''          => 0,
+			      'very-low'  => 1,
+			      'low'       => 2,
+			      'med'       => 3,
+			      'high'      => 4,
+			      'very-high' => 5,
+			      0 => '',
+			      1 => 'very-low',
+			      2 => 'low',
+			      3 => 'med',
+			      4 => 'high',
+			      5 => 'very-high',
+			     };
 
 our $VERSION = '0.01';
 
@@ -145,7 +160,8 @@ sub prepare_report {
 	$r->{percent_passed} = 0;
     }
 
-    # TODO: coverage?
+    # estimate # files (# sessions could be different?):
+    $r->{num_files} = scalar @{ $self->sessions };
 
     # add test results:
     my $total_time = 0;
@@ -156,8 +172,14 @@ sub prepare_report {
     }
     $r->{total_time} = $total_time;
 
-    # this is close enough:
-    $r->{num_files} = scalar @{ $self->sessions };
+    # estimate total severity:
+    my $smap = $self->severity_map;
+    my $severity = 0;
+    $severity += $smap->{$_->{severity} || ''} for @{$r->{tests}};
+    my $avg_severity = ceil($severity / scalar( @{$r->{tests}} ));
+    $r->{severity} = $smap->{$avg_severity};
+
+    # TODO: coverage?
 
     return $r;
 }
@@ -263,7 +285,7 @@ sub as_report {
     $r->{failed_tests} = [ $p->failed ];
 
     # do some other handy calcs:
-    $r->{test_status} = $r->{has_problems} ? 'not-ok' : 'ok';
+    $r->{test_status} = $r->{has_problems} ? 'failed' : 'passed';
     $r->{elapsed_time} = $r->{end_time} - $r->{start_time};
     $r->{severity} = '';
     if ($r->{tests_planned}) {

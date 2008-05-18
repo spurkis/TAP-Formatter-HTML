@@ -1,6 +1,6 @@
 wrap unknown's in <pre>
-percent col should have inner div's for formatting
-table-ify the test summaries
+
+test summary roll-over: not showing all in FF
 
 split out css
 
