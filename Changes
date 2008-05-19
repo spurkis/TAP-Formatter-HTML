@@ -3,6 +3,9 @@ Revision history for 'TAP-Formatter-HTML' Perl module
 
 All changes by Steve Purkis, unless otherwise noted.
 
+0.03
+    +	updated deps in Build.PL (again, *sigh*)
+
 0.02
     +	updated deps in Build.PL
     +	wrote more docs, fixed a few errors & omissions

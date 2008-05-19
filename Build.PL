@@ -26,6 +26,7 @@ my $build = Module::Build->new
    license            => 'perl',
    requires           => {
 			  'perl'        => '5.6.0',
+			  'accessors'   => '0.02',
 			  'URI'         => '1.35',
 			  'Template'    => '2.14',
 			  'TAP::Parser' => '3.10',
