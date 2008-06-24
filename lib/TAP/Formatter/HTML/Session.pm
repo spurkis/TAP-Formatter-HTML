@@ -42,20 +42,41 @@ sub _initialize {
     return $self;
 }
 
-# Called by TAP::?? to create a result after a session is opened
+# Called by TAP::Parser to create a result after a session is opened
+# TODO: override TAP::Parser::ResultFactory and add html-aware results?
+# OR: mixin some methods to the results.
+# this logic is getting cumbersome. :-/
 sub result {
     my ($self, $result) = @_;
     #warn ref($self) . "->result called with args: " . Dumper( $result );
 
+    my $iter = $self->html_id_iterator;
     if ($result->is_test) {
 	$self->log( $result->as_string );
 	# make referring to it in HTML easy:
-	$result->{html_id} = $self->html_id . '-' . $result->number;
+	$result->{html_id} = $iter ? $iter->() : $self->html_id . '-' . $result->number;
 
-	# set this to avoid the hassle of recalculating it in the template:
+	# set test status to avoid the hassle of recalculating it in the template:
 	$result->{test_status}  = $result->has_todo ? 'todo-' : '';
 	$result->{test_status} .= $result->has_skip ? 'skip-' : '';
 	$result->{test_status} .= $result->is_actual_ok ? 'ok' : 'not-ok';
+
+	# also provide a 'short' status name to reduce size of html:
+	my $short;
+	if ($result->has_todo) {
+	    if ($result->is_actual_ok) {
+		$short = 'u'; # todo-ok = "unexpected" ok
+	    } else {
+		$short = 't'; # todo-not-ok
+	    }
+	} elsif ($result->has_skip) {
+	    $short = 's'; # skip-ok
+	} elsif ($result->is_actual_ok) {
+	    $short = 'k'; # ok
+	} else {
+	    $short = 'n'; # not-ok
+	}
+	$result->{short_test_status} = $short;
 
 	# keep track of passes (including unplanned!) for percent_passed calcs:
 	if ($result->is_ok || $result->is_unplanned && $result->is_actual_ok) {
@@ -70,8 +91,31 @@ sub result {
 	$self->info( $result->as_string );
     }
 
+    $self->set_result_css_type( $result );
+
     push @{ $self->results }, $result;
     return;
+}
+
+# TODO: inheritance was created for a reason... use it
+use constant result_css_type_map =>
+  {
+   plan    => 'pln',
+   pragma  => 'prg',
+   test    => 'tst',
+   comment => 'cmt',
+   bailout => 'blt',
+   version => 'ver',
+   unknown => 'unk',
+   yaml    => 'yml',
+  };
+
+sub set_result_css_type {
+    my ($self, $result) = @_;
+    my $type = $result->type || 'unknown';
+    my $css_type = $self->result_css_type_map->{$type} || 'unk';
+    $result->{css_type} = $css_type;
+    return $self;
 }
 
 # Called by TAP::?? to indicate there are no more test results coming
@@ -161,6 +205,10 @@ sub as_report {
     }
 
     return $r;
+}
+
+sub html_id_iterator {
+    shift->formatter->html_id_iterator;
 }
 
 sub log {

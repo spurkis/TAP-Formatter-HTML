@@ -52,7 +52,7 @@ use TAP::Formatter::HTML::Session;
 
 use base qw( TAP::Base );
 use accessors qw( verbosity stdout escape_output tests session_class sessions
-		  template_processor template html
+		  template_processor template html html_id_iterator minify
 		  css_uris js_uris inline_css inline_js abs_file_paths force_inline_css );
 
 use constant default_session_class => 'TAP::Formatter::HTML::Session';
@@ -90,6 +90,7 @@ sub _initialize {
     $self->SUPER::_initialize($args);
     $self->verbosity( 0 )
          ->stdout( \*STDOUT )
+	 ->minify( 1 )
 	 ->escape_output( 0 )
          ->abs_file_paths( 1 )
          ->abs_file_paths( 1 )
@@ -108,7 +109,17 @@ sub _initialize {
 	$self->$key( $args->{$key} ) if ($self->can( $key ));
     }
 
+    $self->html_id_iterator( $self->create_iterator( $args ) );
+
     return $self;
+}
+
+sub create_iterator {
+    my $self = shift;
+    my $args = shift || {};
+    my $prefix = $args->{html_id_prefix} || 't';
+    my $i = 0;
+    my $iter = sub { return $prefix . $i++ };
 }
 
 sub verbose {
@@ -200,6 +211,17 @@ sub generate_report {
       || die $self->template_processor->error;
 
     $self->html( \$html );
+    $self->minify_report if $self->minify;
+
+    return $self;
+}
+
+# try and reduce the size of the report
+sub minify_report {
+    my $self = shift;
+    my $html_ref = $self->html;
+    $$html_ref =~ s/^\t+//mg;
+    return $self;
 }
 
 # convert all uris to URI objs
@@ -534,6 +556,14 @@ the document.
 
 If set, the formatter will include the JavaScript code in a <script> tag in the
 head of the document.
+
+=head3 minify( [ $boolean ] )
+
+If set, the formatter will attempt to reduce the size of the generated report,
+they can get pretty big if you're not careful!  Defaults to C<1> (true).
+
+B<Note:> This currently just means... I<remove tabs at start of a line>.  It
+may be extended in the future.
 
 =head3 abs_file_paths( [ $ boolean ] )
 

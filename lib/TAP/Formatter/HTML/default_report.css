@@ -180,10 +180,10 @@ table.detail td.severity-very-high {
  */
 
 /******************************************************************************
- * Test summaries
+ * Test summaries (.TS)
  */
 
-table.test-summary {
+table.TS {
 	clear: both;
 	width: 100%;
 	height: 10px;
@@ -194,13 +194,13 @@ table.test-summary {
 	border-spacing: 1px;
 }
 
-table.test-summary td {
+table.TS td {
 	margin: 0;
 	padding: 0;
 	height: 10px;
 }
 
-table.test-summary td a {
+table.TS td a {
 	display: block;
 	margin: 0;
 	padding: 0;
@@ -210,38 +210,38 @@ table.test-summary td a {
 }
 
 /* base for passed/failed (should always be lower precedent in class list!) */
-table.test-summary td.passed {
+table.TS td.p { /* p=passed */
 	border: 1px solid #66cc33;
 	background-color: #99ff66;
 }
 
-table.test-summary td.failed {
+table.TS td.f { /* f=failed */
 	border: 1px solid #ff0000;
 	background-color: #ff6450;
 }
 
 /* overrides for specific outcomes */
-table.test-summary td.ok {
+table.TS td.k { /* k=ok */
 	border: 1px solid #66cc33;
 }
 
-table.test-summary td.not-ok {
+table.TS td.n { /* n=not-ok */
 	border: 1px solid #ff0000;
 }
 
-table.test-summary td.todo-ok {
+table.TS td.u { /* u=todo-ok = 'unexpected' ok */
 	border: 1px solid #eeaa00;
 	background-color: #ffcc00;
 }
 
-table.test-summary td.skip-ok {
-	border: 1px solid #99d999;
-	background-color: #99cc66;
-}
-
-table.test-summary td.todo-not-ok {
+table.TS td.t { /* t=todo-not-ok */
 	border: 1px solid #99cc99;
 	background-color: #ddffbb;
+}
+
+table.TS td.s { /* s=skip-ok */
+	border: 1px solid #99d999;
+	background-color: #99cc66;
 }
 
 /******************************************************************************
@@ -283,48 +283,48 @@ ul.test-out li {
 	list-style: none;
 }
 
-ul.test-out li.test {
+ul.test-out li.k { /* k=ok */
 	;
 }
 
-ul.test-out li.comment {
+ul.test-out li.n { /* n=not-ok */
+	color: #ff0000;
+}
+
+ul.test-out li.u { /* u=todo-ok = 'unexpected' ok */
+	color: #cc3333;
+}
+
+ul.test-out li.t { /* t=todo-not-ok */
+	color: #773322;
+}
+
+ul.test-out li.s { /* s=skip-ok */
+	color: #001111;
+}
+
+ul.test-out li.tst {
+	;
+}
+
+ul.test-out li.cmt {
 	color: #666666;
 	font-family: monospace;
 }
 
-ul.test-out li.plan {
+ul.test-out li.pln {
 	color: blue;
 }
 
-ul.test-out li.ok {
-	;
-}
-
-ul.test-out li.todo-ok {
-	color: #cc3333;
-}
-
-ul.test-out li.todo-not-ok {
-	color: #773322;
-}
-
-ul.test-out li.not-ok {
+ul.test-out li.unp { /* unp=unplanned */
 	color: #ff0000;
 }
 
-ul.test-out li.unplanned {
-	color: #ff0000;
-}
-
-ul.test-out li.skip {
-	color: #001111;
-}
-
-ul.test-out li.unknown {
+ul.test-out li.unk { /* unk=unknown */
 	color: #996600;
 	font-family: monospace;
 }
 
-ul.test-out li.exit-status {
+ul.test-out li.stat { /* stat=exit-status */
 	color: #ff0000;
 }

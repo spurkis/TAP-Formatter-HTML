@@ -2,6 +2,14 @@
 TAP-Formatter-HTML: TT2 Template
 Copyright (c) 2008 Steve Purkis.  All rights reserved.
 Released under the same terms as Perl itself.
+
+Developer Notes:
+ * These files can get *BIG*.  Try to keep html weight down to a minimum.
+ * Note that the 'minify' TAP::Formatter::HTML option will remove all the tabs
+   at the start of a line, so remember to use tabs not spaces.
+ * Try to use short (1-2 char) css class names in test result loops.  More
+   readable class names are fine elsewhere.
+ * The default stylesheet that goes with this is 'default_report.css'
 -%]
 <html>
 	<head>
@@ -42,7 +50,7 @@ $(document).ready(function(){
 	});
 
 	// expand test detail when user clicks on an individual test
-	$("a.test-summary").click(function(){
+	$("a.TS").click(function(){
 		var testId = $(this).attr("href")
 		// go all the way to the tr incase table structure changes:
 		var $detail = $(this).parents("td.results").parents("tr:first").find("div.test-detail");
@@ -93,9 +101,9 @@ $(document).ready(function(){
 [% ELSE -%]
 [% IF test.todo_passed %]	some todo tests unexpectedly passed!
 [% END -%]
-	[% test.tests_planned || 0 %] planned, [% test.tests_run || 0 %] run
-	[% test.passed || 0 %] ok, [% test.failed || 0 %] failed
-	[% test.todo || 0 %] todo, [% test.skipped || 0 %] skipped
+  [% test.tests_planned || 0 %] planned, [% test.tests_run || 0 %] run
+  [% test.passed || 0 %] ok, [% test.failed || 0 %] failed
+  [% test.todo || 0 %] todo, [% test.skipped || 0 %] skipped
 [% END -%]
 	exit status: [% test.exit %]
 	wait status: [% test.wait %]">[% test.test %]</a>
@@ -104,18 +112,18 @@ $(document).ready(function(){
 							[%- SET max_tests = 0 -%]
 							[%- SET max_tests = test.tests_planned IF test.tests_planned AND test.tests_planned > max_tests -%]
 							[%- SET max_tests = test.tests_run IF test.tests_run AND test.tests_run > max_tests %]
-							<table class="test-summary">[%# Note: use a table to caulculate widths automatically %]
+							<table class="TS">[%# TS=Test Summary. Note: use a table to caulculate widths automatically %]
 								<tr>
 									[%- IF test.tests_run AND test.tests_run > 0 -%]
 									  [%- FOREACH result IN test.results -%]
 									  [%- IF result.is_test %]
-									  <td class="test [% result.test_status %] [% IF result.is_ok %]passed[% ELSE %]failed[% END %]"><a class="test-summary" href="#[% result.html_id %]" title="[% result.raw | html %]">&nbsp;</a></td>
+										<td class="[% result.short_test_status _ ' ' %][% IF result.is_ok %]p[% ELSE %]f[% END %]"><a class="TS" href="#[% result.html_id %]" title="[% result.raw | html %]">&nbsp;</a></td>
 								    [%- END -%]
 										[%- END -%]
-									[%- ELSIF test.skip_all -%]
-									<td class="skip-ok" width="100%"><a href="#" title="[% test.results.first.raw | html %]">&nbsp;</a></td>
-									[%- ELSE -%]
-									<td class="stub not-ok" width="100%"><a href="#" title="No tests run!">&nbsp;</a></td>
+									[%- ELSIF test.skip_all -%][%# below: class 's' = skip-ok -%]
+									<td class="s" width="100%"><a href="#" title="[% test.results.first.raw | html %]">&nbsp;</a></td>
+									[%- ELSE -%][%# below: class 'n' = not-ok -%]
+									<td class="stub n" width="100%"><a href="#" title="No tests run!">&nbsp;</a></td>
 									[%- END %]
 								</tr>
 							</table>
@@ -129,15 +137,14 @@ $(document).ready(function(){
 								[%- END %]
 								<ul class="test-out">
 									[%- FOREACH result IN test.results %]
-									<li [% IF result.is_test %]id="[% result.html_id %]"[% END -%]
-											class="[% result.type -%]
-														 [%- IF result.is_test %][% ' ' _ result.test_status -%][%- END -%]
-														 [%- IF result.is_unplanned %] unplanned[% END -%]">[% result.raw | html -%]
+									<li [% IF result.is_test %]id="[% result.html_id %]" [% END -%]class="[% result.css_type -%]
+														 [%- IF result.is_test %][% ' ' _ result.short_test_status -%][%- END -%]
+														 [%- IF result.is_unplanned %] unp[% END -%]">[% result.raw | html -%]
 										[%- IF result.is_unplanned %]<em> (unplanned!)</em>[% END -%]
 										[%- IF result.todo_passed %]<em> (unexpectedly succeeded!)</em>[% END %]</li>
 									[%- END -%]
 									[%- IF test.exit OR test.wait -%]
-									<li class="exit-status">exit status: [% test.exit %], wait status: [% test.wait %]</li>
+									<li class="stat">exit status: [% test.exit %], wait status: [% test.wait %]</li>
 									[%- END %]
 								</ul>
 							</div>
