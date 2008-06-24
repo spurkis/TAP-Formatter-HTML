@@ -81,7 +81,7 @@ use constant severity_map => {
 			      5 => 'very-high',
 			     };
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 sub _initialize {
     my ($self, $args) = @_;

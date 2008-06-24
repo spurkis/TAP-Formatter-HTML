@@ -3,6 +3,13 @@ Revision history for 'TAP-Formatter-HTML' Perl module
 
 All changes by Steve Purkis, unless otherwise noted.
 
+0.04
+    +	reduced the size of the generated HTML (by 25% on avg for my tests):
+	  * added 'minify' option to strip leading tabs
+	  * used short css class names
+	  * used numeric html id's
+	  * got rid of some other unnecessary whitespace
+
 0.03
     +	updated deps in Build.PL (again, *sigh*)
 
