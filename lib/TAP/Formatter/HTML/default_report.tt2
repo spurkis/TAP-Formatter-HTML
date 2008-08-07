@@ -26,46 +26,6 @@ Developer Notes:
 [% inline_js %]
 		</script>
 		[%- END %]
-
-		<script type="text/javascript">
-// temporary hack, move external
-jQuery.fn.extend({
-  scrollTo : function(speed, easing) {
-    return this.each(function() {
-      var targetOffset = $(this).offset().top;
-      $('html,body').animate({scrollTop: targetOffset}, speed, easing);
-    });
-  }
-});
-
-$(document).ready(function(){
-	$("div.test-detail").hide();
-	$("div.summary").find("a").click(function(){return false;});
-
-	// expand test detail when user clicks on a test file
-	$("a.file").click(function(){
-		// go all the way to the tr incase table structure changes:
-		$(this).parents("tr:first").find("div.test-detail").slideToggle();
-		return false;
-	});
-
-	// expand test detail when user clicks on an individual test
-	$("a.TS").click(function(){
-		var testId = $(this).attr("href")
-		// go all the way to the tr incase table structure changes:
-		var $detail = $(this).parents("td.results").parents("tr:first").find("div.test-detail");
-		$detail.filter(":hidden").slideDown();
-		var $testElem = $detail.find(testId);
-		$testElem.show().scrollTo(1000);
-		var bgColor = $testElem.css("background-color");
-		$testElem.css({ backgroundColor: "yellow" });
-		// shame you can't animate bg color w/o a plugin...
-		setTimeout(function(){$testElem.css({ backgroundColor: bgColor })}, 3000);
-		return false;
-	});
-});
-		</script>
-
 	</head>
 	<body>
 		[% IF report.has_errors %][% SET status = 'failed' %][% ELSE %][% SET status = 'passed' %][% END -%]
@@ -90,8 +50,10 @@ $(document).ready(function(){
 				</thead>
 				<tbody>
 					[%- FOREACH test IN report.tests %]
-					<tr id="[% test.html_id %]" class="test-run [% test.test_status %]">
-						<td class="file">
+					<tr class="test-run [% test.test_status -%]
+										 [%- IF test.severity %][% ' severity-' _ test.severity %][% END -%]
+										 [%- IF test.todo_passed %] todo-passed[% END %]" id="[% test.html_id %]">
+						<td class="file c">
 							<a class="file" href="#" title="Test [% IF test.has_problems %]failed![% ELSE %]ok.[% END %]
 [% IF test.num_parse_errors %]	[% test.num_parse_errors %] parse error(s)!
 [% END -%]
@@ -115,9 +77,18 @@ $(document).ready(function(){
 							<table class="TS">[%# TS=Test Summary. Note: use a table to caulculate widths automatically %]
 								<tr>
 									[%- IF test.tests_run AND test.tests_run > 0 -%]
+										[%- SET current_test = 0 -%]
 									  [%- FOREACH result IN test.results -%]
 									  [%- IF result.is_test %]
-										<td class="[% result.short_test_status _ ' ' %][% IF result.is_ok %]p[% ELSE %]f[% END %]"><a class="TS" href="#[% result.html_id %]" title="[% result.raw | html %]">&nbsp;</a></td>
+										[%- current_test = current_test + 1 -%]
+										<td class="[% result.short_test_status _ ' ' %][% IF result.is_ok %]p[% ELSE %]f[% END %]"><a class="TS" href="#[% result.html_id %]" title="[% result.raw | html %]"> </a></td>
+								[%#
+								Note: break up the tests at 100 so as to preserve sanity.
+								This may leave some tests looking silly (if there's only 101)
+								but in the case of 1000s of tests, it makes this more readable.
+								-%]
+										[%- IF (current_test % 100) == 0 %]
+								</tr><tr>[% END -%]
 								    [%- END -%]
 										[%- END -%]
 									[%- ELSIF test.skip_all -%][%# below: class 's' = skip-ok -%]
@@ -150,10 +121,7 @@ $(document).ready(function(){
 							</div>
 						</td>
 						<td class="time">[% test.elapsed_time | format('%.2fs') %]</td>
-						<td class="percent [% test.test_status -%]
-											 [%- IF test.severity %][% ' severity-' _ test.severity %][% END -%]
-											 [%- IF test.todo_passed %] todo-passed[% END %]">[% IF test.percent_passed -%]
-							[%- test.percent_passed %]%[% ELSE %]n/a[% END %]</td>
+						<td class="percent c cb">[% test.percent_passed ? test.percent_passed _ '%' : 'n/a' %]</td>
 					</tr>
 					[%- END %]
 				</tbody>

@@ -3,6 +3,19 @@ Revision history for 'TAP-Formatter-HTML' Perl module
 
 All changes by Steve Purkis, unless otherwise noted.
 
+0.05
+    +	fixed width issue: test files with hundreds of tests were causing
+	uncontrollable width in summary, making the report pretty annoying
+	to read.
+    +	highlight failed test file names
+    +	added toggle to display all / failed tests [requested by Alex Monney]
+    *	moved inline JS out of default_report.tt2 to its own file that is
+	included by default.
+    *	split css into 'page' & 'report' for ease of user maintainability.
+	[requested by Steffen Schwigon]
+
+
+
 0.04
     +	reduced the size of the generated HTML (by 25% on avg for my tests):
 	  * added 'minify' option to strip leading tabs

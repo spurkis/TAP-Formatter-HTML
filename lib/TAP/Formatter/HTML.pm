@@ -57,8 +57,10 @@ use accessors qw( verbosity stdout escape_output tests session_class sessions
 
 use constant default_session_class => 'TAP::Formatter::HTML::Session';
 use constant default_template      => 'TAP/Formatter/HTML/default_report.tt2';
-use constant default_js_uris       => ['file:TAP/Formatter/HTML/jquery-1.2.3.pack.js'];
-use constant default_css_uris      => ['file:TAP/Formatter/HTML/default_report.css'];
+use constant default_js_uris       => ['file:TAP/Formatter/HTML/jquery-1.2.3.pack.js',
+				       'file:TAP/Formatter/HTML/default_report.js'];
+use constant default_css_uris      => ['file:TAP/Formatter/HTML/default_page.css',
+				       'file:TAP/Formatter/HTML/default_report.css'];
 use constant default_template_processor =>
   Template->new(
 		COMPILE_DIR  => catdir( tempdir(), 'TAP-Formatter-HTML' ),
@@ -81,7 +83,7 @@ use constant severity_map => {
 			      5 => 'very-high',
 			     };
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 sub _initialize {
     my ($self, $args) = @_;

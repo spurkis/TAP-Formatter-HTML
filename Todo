@@ -1,13 +1,33 @@
+wrap unknown test output's in <pre>
+
+expand all tests
+expand failed tests
+
+sort by ... cols
+
+
+Fix bug: % passed on test file != % ok, should add up to # at bottom but doesn't!
+
+Script still running bug
+   * when you navigate away from page
+   * jquery cleanup?
+
+Reduce space:
+   * set titles on page load or mouseover (by looking up name, follow href id)
+
+
+See if this fixes the non-collapsing problem:
+   * hide & show the tr after the slideToggle
+   * seems to be related to the scrollTo?
+
+support file output
+   * prove --html=output.html
+   * allow output to STDOUT
+   * write an App::Prove plugin
+
 Give the test suite a title...
 
 More tests!
  * parse the generated output
  * check the view given to the TT view
 
-wrap unknown test output's in <pre>
-
-expand all tests
-expand failed tests
-
-support file output
-   * but how to integrate into prove?

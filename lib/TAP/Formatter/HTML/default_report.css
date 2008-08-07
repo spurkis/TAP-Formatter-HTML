@@ -1,20 +1,8 @@
 /******************************************************************************
- * TAP-Formatter-HTML: default report stylesheet
+ * TAP-Formatter-HTML: default stylesheet for report body
  * Copyright (c) 2008 Steve Purkis.  All rights reserved.
  * Released under the same terms as Perl itself.
  *****************************************************************************/
-
-html {
-	width: 100%;
-	height: 100%;
-}
-
-body {
-	font-family: Helvetica, Verdana, Arial, Tahoma;
-	font-size: small;
-	background-color: #efefef;
-}
-
 
 /******************************************************************************
 /* The summary bar
@@ -22,7 +10,7 @@ body {
 #summary {
 	position: relative;
 	padding: 2px 0 2 0;
-	width: 90%;
+	width: 100%;
 	font-size: x-large;
 	text-align: center;
 }
@@ -58,7 +46,7 @@ body {
  */
 #detail {
 	margin-top: 5px;
-	width: 90%;
+	width: 100%;
 }
 
 table.detail {
@@ -66,7 +54,6 @@ table.detail {
 	border: 1px solid #3333ee;
 	padding: 2px;
 	border-spacing: 0px;
-
 }
 
 table.detail th {
@@ -88,6 +75,16 @@ table.detail td {
 	padding: 2px 0 2 0;
 	vertical-align: top;
 }
+
+table.detail td.file {
+	font-size: small;
+}
+
+/*
+table.detail tr.failed td.file {
+	background-color: #FF6450;
+}
+*/
 
 /******************************************************************************
  * The file column
@@ -140,37 +137,55 @@ table.detail td.percent {
 	vertical-align: middle;
 }
 
-table.detail td.passed {
+/******************************************************************************
+ * Colouring the file & percentage columns
+ */
+table.detail tr.percent td.c {
+	padding-left: 2px;
+	padding-right: 2px;
+	width: 2%;
+	text-align: center;
+	font-size: small;
+	vertical-align: middle;
+}
+
+table.detail tr.passed td.c {
 	border: 1px solid #99cc99;
+}
+
+table.detail tr.passed td.cb {
 	background-color: #99ff66;
 }
 
-table.detail td.todo-passed {
+table.detail tr.todo-passed td.c {
 	border: 1px solid #99cc99;
+}
+
+table.detail tr.todo-passed td.cb {
 	background-color: #ddffbb;
 }
 
-table.detail td.severity-very-low {
+table.detail tr.severity-very-low td.c {
 	border: 1px solid #ffee33;
 	background-color: #ffffaa;
 }
 
-table.detail td.severity-low {
+table.detail tr.severity-low td.c {
 	border: 1px solid #eecc33;
 	background-color: #ffdd99;
 }
 
-table.detail td.severity-med {
+table.detail tr.severity-med td.c {
 	border: 1px solid #dd6633;
 	background-color: #ffaa77;
 }
 
-table.detail td.severity-high {
+table.detail tr.severity-high td.c {
 	border: 1px solid #ff3333;
 	background-color: #ff8866;
 }
 
-table.detail td.severity-very-high {
+table.detail tr.severity-very-high td.c {
 	border: 1px solid #ff0000;
 	background-color: #ff6450;
 }
