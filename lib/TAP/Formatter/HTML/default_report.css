@@ -5,6 +5,29 @@
  *****************************************************************************/
 
 /******************************************************************************
+/* The menu bar
+ */
+#menu {
+	display: none; /* hidden by default */
+	position: absolute;
+	left: 8px;
+	top: 8px;
+	padding: 2px;
+	width: 100px;
+	height: 26px;
+	font-size: small;
+	background-color: #eeffcc;
+	opacity: 0.5;
+}
+
+#menu li {
+	text-decoration: none;
+	list-style: none;
+	display: block;
+}
+
+
+/******************************************************************************
 /* The summary bar
  */
 #summary {

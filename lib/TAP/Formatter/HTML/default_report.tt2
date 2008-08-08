@@ -9,7 +9,8 @@ Developer Notes:
    at the start of a line, so remember to use tabs not spaces.
  * Try to use short (1-2 char) css class names in test result loops.  More
    readable class names are fine elsewhere.
- * The default stylesheet that goes with this is 'default_report.css'
+ * The default stylesheets that goes with this are 'default_report.css' & 'default_page.css'
+ * The default javascript files are 'jquery-1.2.3-min.js' & 'default_report.js'
 -%]
 <html>
 	<head>
@@ -36,6 +37,13 @@ Developer Notes:
 	passed [% report.passed %]/[% report.total %] tests in [% report.num_files %] files
 	total time: [% report.total_time | format('%.2fs') %]
 	[% report.elapsed_time | trim %]">[% status FILTER upper %]</a>
+		</div>
+
+		<div id="menu">
+			<li>
+				<span id="show-all"><a href="#" title="show all tests">show all</a></span>
+		    <span id="show-failed"><a href="#" title="show failed tests only">show failed</a></span>
+			</li>
 		</div>
 
 		<div id="detail">

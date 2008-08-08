@@ -1,10 +1,3 @@
-wrap unknown test output's in <pre>
-
-expand all tests
-expand failed tests
-
-sort by ... cols
-
 
 Fix bug: % passed on test file != % ok, should add up to # at bottom but doesn't!
 
@@ -20,10 +13,22 @@ See if this fixes the non-collapsing problem:
    * hide & show the tr after the slideToggle
    * seems to be related to the scrollTo?
 
+sort by cols
+   * time!
+   * test file
+   * percent
+
 support file output
    * prove --html=output.html
    * allow output to STDOUT
    * write an App::Prove plugin
+
+wrap unknown test output's in <pre>
+
+expand all tests
+expand failed tests
+
+collapse current test (from halway down big tests, maybe a mouseover file or something)
 
 Give the test suite a title...
 

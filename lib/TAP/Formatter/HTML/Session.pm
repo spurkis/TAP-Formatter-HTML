@@ -78,7 +78,12 @@ sub result {
 	}
 	$result->{short_test_status} = $short;
 
-	# keep track of passes (including unplanned!) for percent_passed calcs:
+	# keep track of passes for percent_passed calcs:
+	if ($result->is_ok) {
+	    $self->meta->{passed}++;
+	}
+
+	# keep track of passes (including unplanned!) for actual_percent_passed calcs:
 	if ($result->is_ok || $result->is_unplanned && $result->is_actual_ok) {
 	    $self->meta->{passed_including_unplanned}++;
 	}
@@ -164,11 +169,13 @@ sub as_report {
     $r->{elapsed_time} = $r->{end_time} - $r->{start_time};
     $r->{severity} = '';
     if ($r->{tests_planned}) {
-	# Calculate percentage passed as # passes *including* unplanned passes
-	# so we can get > 100% -- this can be a good indicator as to why a test
-	# failed!
-	my $passed_incl_unplanned = $self->meta->{passed_including_unplanned} || 0;
-	my $p = $r->{percent_passed} = sprintf('%.1f', $passed_incl_unplanned / $r->{tests_planned} * 100);
+	# Calculate percentage passed as # passes *excluding* unplanned passes
+	# so we can't get > 100%.  Also calc # passes _including_ unplanned
+	# in case that's useful for someone.
+	my $num_passed = $self->meta->{passed} || 0;
+	my $num_actual_passed = $self->meta->{passed_including_unplanned} || 0;
+	my $p = $r->{percent_passed} = sprintf('%.1f', $num_passed / $r->{tests_planned} * 100);
+	$r->{percent_actual_passed}  = sprintf('%.1f', $num_actual_passed / $r->{tests_planned} * 100);
 	if ($p != 100) {
 	    my $s;
 	    if ($p < 25)    { $s = 'very-high' }
