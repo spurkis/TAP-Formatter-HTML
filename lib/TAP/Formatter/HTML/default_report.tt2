@@ -89,7 +89,7 @@ Developer Notes:
 									  [%- FOREACH result IN test.results -%]
 									  [%- IF result.is_test %]
 										[%- current_test = current_test + 1 -%]
-										<td class="[% result.short_test_status _ ' ' %][% IF result.is_ok %]p[% ELSE %]f[% END %]"><a class="TS" href="#[% result.html_id %]" title="[% result.raw | html %]"> </a></td>
+										<td class="[% result.short_test_status _ ' ' %][% IF result.is_ok %]p[% ELSE %]f[% END %]"><a class="TS" href="#[% result.html_id %]"> </a></td>
 								[%#
 								Note: break up the tests at 100 so as to preserve sanity.
 								This may leave some tests looking silly (if there's only 101)

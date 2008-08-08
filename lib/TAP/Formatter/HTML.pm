@@ -57,7 +57,7 @@ use accessors qw( verbosity stdout escape_output tests session_class sessions
 
 use constant default_session_class => 'TAP::Formatter::HTML::Session';
 use constant default_template      => 'TAP/Formatter/HTML/default_report.tt2';
-use constant default_js_uris       => ['file:TAP/Formatter/HTML/jquery-1.2.3.pack.js',
+use constant default_js_uris       => ['file:TAP/Formatter/HTML/jquery-1.2.6.pack.js',
 				       'file:TAP/Formatter/HTML/default_report.js'];
 use constant default_css_uris      => ['file:TAP/Formatter/HTML/default_page.css',
 				       'file:TAP/Formatter/HTML/default_report.css'];
@@ -547,7 +547,7 @@ A list of L<URI>s (or strings) to include as external stylesheets in <style>
 tags in the head of the document.
 Defaults to:
 
-  ['file:TAP/Formatter/HTML/jquery-1.2.3.pack.js'];
+  ['file:TAP/Formatter/HTML/jquery-1.2.6.pack.js'];
 
 =head3 inline_css( [ $css ] )
 

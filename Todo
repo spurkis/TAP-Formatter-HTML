@@ -1,17 +1,13 @@
 
-Fix bug: % passed on test file != % ok, should add up to # at bottom but doesn't!
-
 Script still running bug
    * when you navigate away from page
+   * only on big test outputs
    * jquery cleanup?
 
-Reduce space:
-   * set titles on page load or mouseover (by looking up name, follow href id)
-
-
-See if this fixes the non-collapsing problem:
-   * hide & show the tr after the slideToggle
-   * seems to be related to the scrollTo?
+Sometimes test details don't collaps properly!
+   * doesn't happen in FireFox 3?
+   * related to the scrollTo?
+   * could hide & show the tr after the slideToggle?
 
 sort by cols
    * time!

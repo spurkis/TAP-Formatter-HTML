@@ -7,14 +7,18 @@ All changes by Steve Purkis, unless otherwise noted.
     +	fixed width issue: test files with hundreds of tests were causing
 	uncontrollable width in summary, making the report pretty annoying
 	to read.
-    +	highlight failed test file names
     +	added toggle to display all / failed tests [requested by Alex Monney]
+    +	highlight failed test file names
+    +	reduced the size of generated HTML by a further ~10-35% (depending on
+	the number of tests you run):
+	  * set test title on mouse-over so it's included only once
     *	moved inline JS out of default_report.tt2 to its own file that is
 	included by default.
     *	split css into 'page' & 'report' for ease of user maintainability.
 	[requested by Steffen Schwigon]
-
-
+    +	fixed bug: % passed on test file != % ok, was really confusing people.
+	[requested by Wolfram Pfeiffer]
+    *	upgraded to jquery-1.2.6
 
 0.04
     +	reduced the size of the generated HTML (by 25% on avg for my tests):
