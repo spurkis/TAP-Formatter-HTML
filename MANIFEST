@@ -4,9 +4,11 @@ examples/DBD-SQLite-example.html
 examples/jquery-1.2.3.pack.js
 examples/test-output.html
 lib/TAP/Formatter/HTML.pm
+lib/TAP/Formatter/HTML/default_page.css
 lib/TAP/Formatter/HTML/default_report.css
+lib/TAP/Formatter/HTML/default_report.js
 lib/TAP/Formatter/HTML/default_report.tt2
-lib/TAP/Formatter/HTML/jquery-1.2.3.pack.js
+lib/TAP/Formatter/HTML/jquery-1.2.6.pack.js
 lib/TAP/Formatter/HTML/Session.pm
 Makefile.PL
 MANIFEST			This list of files
@@ -27,4 +29,5 @@ t/data/07_todo_pass.pl
 t/data/08_html_in_output.pl
 t/data/09_skip_error.pl
 t/data/10_todo_skip.pl
+t/data/11_lots_of_tests.pl
 Todo
