@@ -63,7 +63,8 @@ use constant default_css_uris      => ['file:TAP/Formatter/HTML/default_page.css
 				       'file:TAP/Formatter/HTML/default_report.css'];
 use constant default_template_processor =>
   Template->new(
-		COMPILE_DIR  => catdir( tempdir(), 'TAP-Formatter-HTML' ),
+		# arguably shouldn't compile as this is only used once
+		COMPILE_DIR  => catdir( tempdir( CLEANUP => 1 ), 'TAP-Formatter-HTML' ),
 		COMPILE_EXT  => '.ttc',
 		INCLUDE_PATH => join(':', @INC),
 	       );
@@ -83,7 +84,7 @@ use constant severity_map => {
 			      5 => 'very-high',
 			     };
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 sub _initialize {
     my ($self, $args) = @_;

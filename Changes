@@ -3,6 +3,9 @@ Revision history for 'TAP-Formatter-HTML' Perl module
 
 All changes by Steve Purkis, unless otherwise noted.
 
+0.06
+    +	fixed RT #37019: tempdir without cleanup [reported by Steffen Schwigon]
+
 0.05
     +	fixed width issue: test files with hundreds of tests were causing
 	uncontrollable width in summary, making the report pretty annoying
