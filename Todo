@@ -1,4 +1,14 @@
 
+Reports from Nathan S. Watson-Haigh:
+   * POD bug: 'incline' rather than inline
+   * can_ok tests for interface methods
+
+Reports from Nadim Khemir:
+   * integrate into build scripts (eg: M::B)
+   * possible to open the test file and show the test itself?
+   * why the need to stop using Test::Harness?
+
+
 Script still running bug
    * when you navigate away from page
    * only on big test outputs
