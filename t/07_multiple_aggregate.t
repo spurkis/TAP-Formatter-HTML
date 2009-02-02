@@ -12,7 +12,7 @@ use TAP::Parser::Aggregator;
 use_ok( 'TAP::Formatter::HTML' );
 
 my $tmp = FileTempTFH->new;
-my $f = TAP::Formatter::HTML->new({ really_quiet => 1 })->output_fh( $tmp )->force_inline_css(0);
+my $f = TAP::Formatter::HTML->new({ silent => 1 })->output_fh( $tmp )->force_inline_css(0);
 my $h = TAP::Harness->new({ merge => 1, formatter => $f });
 my $a = TAP::Parser::Aggregator->new;
 

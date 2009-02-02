@@ -117,7 +117,8 @@ sub _initialize {
          ->js_uris( $self->default_js_uris )
          ->css_uris( $self->default_css_uris )
          ->inline_js( '' )
-	 ->inline_css( '' );
+	 ->inline_css( '' )
+	 ->sessions( [] );
 
     $self->check_for_overrides_in_env;
 
@@ -209,7 +210,7 @@ sub prepare {
     my ($self, @tests) = @_;
     # warn ref($self) . "->prepare called with args:\n" . Dumper( \@tests );
     $self->info( 'running ', scalar @tests, ' tests' );
-    $self->sessions([])->tests( [@tests] );
+    $self->tests( [@tests] );
 }
 
 # Called to create a new test session. A test session looks like this:
@@ -261,7 +262,7 @@ sub generate_report {
 		  report => $r,
 		  js_uris  => $self->js_uris,
 		  css_uris => $self->css_uris,
-		  incline_js  => $self->inline_js,
+		  inline_js  => $self->inline_js,
 		  inline_css => $self->inline_css,
 		  formatter => { class => ref( $self ),
 				 version => $self->VERSION },
@@ -366,7 +367,10 @@ sub prepare_report {
     my $smap = $self->severity_map;
     my $severity = 0;
     $severity += $smap->{$_->{severity} || ''} for @{$r->{tests}};
-    my $avg_severity = ceil($severity / scalar( @{$r->{tests}} ));
+    my $avg_severity = 0;
+    if (scalar @{$r->{tests}}) {
+	$avg_severity = ceil($severity / scalar( @{$r->{tests}} ));
+    }
     $r->{severity} = $smap->{$avg_severity};
 
     # TODO: coverage?
@@ -569,6 +573,9 @@ equivalent to:
 
   $fmt->output_fh( IO::File->new( $file_name, 'w' ) );
 
+You can set this with the C<TAP_FORMATTER_HTML_OUTFILE=/path/to/file>
+environment variable
+
 =head3 escape_output( [ $boolean ] )
 
 If set, all output to L</stdout> is escaped.  This is probably only useful
@@ -610,6 +617,9 @@ Defaults to a TT2 L<Template> processor with the following config:
 The template file to load.
 Defaults to C<TAP/Formatter/HTML/default_report.tt2>.
 
+You can set this with the C<TAP_FORMATTER_HTML_TEMPLATE=/path/to.tt> environment
+variable.
+
 =head3 css_uris( [ \@uris ] )
 
 A list of L<URI>s (or strings) to include as external stylesheets in <style>
@@ -618,6 +628,9 @@ Defaults to:
 
   ['file:TAP/Formatter/HTML/default_report.css'];
 
+You can set this with the C<TAP_FORMATTER_HTML_CSS_URIS=/path/to.css:/another/path.css>
+environment variable.
+
 =head3 js_uris( [ \@uris ] )
 
 A list of L<URI>s (or strings) to include as external stylesheets in <style>
@@ -625,6 +638,9 @@ tags in the head of the document.
 Defaults to:
 
   ['file:TAP/Formatter/HTML/jquery-1.2.6.pack.js'];
+
+You can set this with the C<TAP_FORMATTER_HTML_JS_URIS=/path/to.js:/another/path.js>
+environment variable.
 
 =head3 inline_css( [ $css ] )
 
@@ -659,7 +675,12 @@ L</css_uris>, and append them to L</inline_css>.  This is handy if you'll be
 sending the output around - that way you don't have to send a CSS file too.
 Defaults to I<1>.
 
-=head2 $html = $fmt->summary( $aggregator )
+You can set this with the C<TAP_FORMATTER_HTML_FORCE_INLINE_CSS=0|1> environment
+variable.
+
+=head2 API METHODS
+
+=head3 $html = $fmt->summary( $aggregator )
 
 C<summary> produces a summary report after all tests are run.  C<$aggregator>
 should be a L<TAP::Parser::Aggregator>.
@@ -673,7 +694,7 @@ Where C<$params> is a data structure containing:
   report      => %test_report
   js_uris     => @js_uris
   css_uris    => @js_uris
-  incline_js  => $inline_js
+  inline_js   => $inline_js
   inline_css  => $inline_css
   formatter   => %formatter_info
 
@@ -684,6 +705,16 @@ be documented in L</CUSTOMIZING>.
 
 This section is not yet written.  Please look through the code if you want to
 customize the templates, or sub-class.
+
+You can use environment variables to customize the behaviour of TFH:
+
+  TAP_FORMATTER_HTML_OUTFILE=/path/to/file
+  TAP_FORMATTER_HTML_FORCE_INLINE_CSS=0|1
+  TAP_FORMATTER_HTML_CSS_URIS=/path/to.css:/another/path.css
+  TAP_FORMATTER_HTML_JS_URIS=/path/to.js:/another/path.js
+  TAP_FORMATTER_HTML_TEMPLATE=/path/to.tt
+
+This should save you from having to write custom code for simple cases.
 
 =head1 BUGS
 
