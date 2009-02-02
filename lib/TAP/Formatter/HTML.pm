@@ -7,6 +7,9 @@ TAP::Formatter::HTML - TAP Test Harness output delegate for html output
  # cmdline usage:
  % prove -m -Q --formatter=TAP::Formatter::HTML >output.html
 
+ # currently in alpha:
+ % prove -PHTML=output.html -m -Q --formatter=TAP::Formatter::HTML
+
  # perl usage:
  use TAP::Harness;
 
@@ -27,6 +30,10 @@ TAP::Formatter::HTML - TAP Test Harness output delegate for html output
 
  my $harness = TAP::Harness->new({ formatter => $fmt, merge => 1 });
 
+ # to output HTML to a file[handle]:
+ $fmt->output_fh( $fh );
+ $fmt->output_file( '/tmp/foo.html' );
+
  # you can use your own customized templates too:
  $fmt->template('custom.tt2')
      ->template_processor( Template->new )
@@ -42,6 +49,7 @@ use warnings;
 use URI;
 use Template;
 use POSIX qw( ceil );
+use IO::File;
 use File::Temp qw( tempfile tempdir );
 use File::Spec::Functions qw( catdir catfile file_name_is_absolute rel2abs );
 
@@ -51,7 +59,7 @@ use TAP::Formatter::HTML::Session;
 #use Data::Dumper 'Dumper';
 
 use base qw( TAP::Base );
-use accessors qw( verbosity stdout escape_output tests session_class sessions
+use accessors qw( verbosity stdout output_fh escape_output tests session_class sessions
 		  template_processor template html html_id_iterator minify
 		  css_uris js_uris inline_css inline_js abs_file_paths force_inline_css );
 
@@ -84,15 +92,20 @@ use constant severity_map => {
 			      5 => 'very-high',
 			     };
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 sub _initialize {
     my ($self, $args) = @_;
 
     $args ||= {};
     $self->SUPER::_initialize($args);
+
+    my $stdout_fh = IO::File->new_from_fd( fileno(STDOUT), 'w' )
+      or die "Error opening STDOUT for writing: $!";
+
     $self->verbosity( 0 )
-         ->stdout( \*STDOUT )
+         ->stdout( $stdout_fh )
+         ->output_fh( $stdout_fh )
 	 ->minify( 1 )
 	 ->escape_output( 0 )
          ->abs_file_paths( 1 )
@@ -106,6 +119,8 @@ sub _initialize {
          ->inline_js( '' )
 	 ->inline_css( '' );
 
+    $self->check_for_overrides_in_env;
+
     # Laziness...
     # trust the user knows what they're doing with the args:
     foreach my $key (keys %$args) {
@@ -115,6 +130,42 @@ sub _initialize {
     $self->html_id_iterator( $self->create_iterator( $args ) );
 
     return $self;
+}
+
+sub check_for_overrides_in_env {
+    my $self = shift;
+
+    if (my $file = $ENV{TAP_FORMATTER_HTML_OUTFILE}) {
+	$self->output_file( $file );
+    }
+
+    my $force = $ENV{TAP_FORMATTER_HTML_FORCE_INLINE_CSS};
+    if (defined( $force )) {
+	$self->force_inline_css( $force );
+    }
+
+    if (my $uris = $ENV{TAP_FORMATTER_HTML_CSS_URIS}) {
+	my $list = [ split( ':', $uris ) ];
+	$self->css_uris( $list );
+    }
+
+    if (my $uris = $ENV{TAP_FORMATTER_HTML_JS_URIS}) {
+	my $list = [ split( ':', $uris ) ];
+	$self->js_uris( $list );
+    }
+
+    if (my $file = $ENV{TAP_FORMATTER_HTML_TEMPLATE}) {
+	$self->template( $file );
+    }
+
+    return $self;
+}
+
+sub output_file {
+    my ($self, $file) = @_;
+    my $fh = IO::File->new( $file, 'w' )
+      or die "Error opening '$file' for writing: $!";
+    $self->output_fh( $fh );
 }
 
 sub create_iterator {
@@ -131,18 +182,21 @@ sub verbose {
     if (@_) { $self->verbosity(1) }
     return $self->verbosity >= 1;
 }
+
 sub quiet {
     my $self = shift;
     # emulate a classic accessor for compat w/TAP::Formatter::Console:
     if (@_) { $self->verbosity(-1) }
     return $self->verbosity <= -1;
 }
+
 sub really_quiet {
     my $self = shift;
     # emulate a classic accessor for compat w/TAP::Formatter::Console:
     if (@_) { $self->verbosity(-2) }
     return $self->verbosity <= -2;
 }
+
 sub silent {
     my $self = shift;
     # emulate a classic accessor for compat w/TAP::Formatter::Console:
@@ -188,7 +242,11 @@ sub summary {
     my $report = $self->prepare_report( $aggregate );
     $self->generate_report( $report );
 
-    $self->_output( $self->html );
+    # if silent is set, only print HTML if we're not printing to stdout
+    if (! $self->silent or $self->output_fh->fileno != fileno(STDOUT)) {
+	print { $self->output_fh } ${ $self->html };
+	$self->output_fh->flush;
+    }
 
     return $self;
 }
@@ -393,7 +451,7 @@ sub _output {
     my $self = shift;
     return if $self->silent;
     if (ref($_[0]) && ref( $_[0]) eq 'SCALAR') {
-	# printing HTML:
+	# DEPRECATED: printing HTML:
 	print { $self->stdout } ${ $_[0] };
     } else {
 	unshift @_, '# ' if $self->escape_output;
@@ -412,7 +470,7 @@ __END__
 This module provides HTML output formatting for L<TAP::Harness> (a replacement
 for L<Test::Harness>.  It is largely based on ideas from
 L<TAP::Test::HTMLMatrix> (which was built on L<Test::Harness> and thus had a
-from a few limitations - hence this module).  For sample output, see:
+few limitations - hence this module).  For sample output, see:
 
 L<http://www.spurkis.org/TAP-Formatter-HTML/test-output.html>
 
@@ -485,14 +543,31 @@ Verbosity level, as defined in L<TAP::Harness/new>:
      1   verbose        Print individual test results (and more) to STDOUT.
      0   normal
     -1   quiet          Suppress some test output (eg: test failures).
-    -2   really quiet   Suppress everything but the HTML report.
-    -3   silent         Suppress all output, including the HTML report.
+    -2   really quiet   Suppress everything to STDOUT but the HTML report.
+    -3   silent         Suppress all output to STDOUT, including the HTML report.
 
-Note that the report is also available via L</html>.
+Note that the report is also available via L</html>.  You can also provide a
+custom L</output_fh> (aka L</output_file>) that will be used instead of
+L</stdout>, even if I<silent> is on.
 
 =head3 stdout( [ \*FH ] )
 
-A filehandle for catching standard output.  Defaults to C<STDOUT>.
+An L<IO::Handle> filehandle for catching standard output.  Defaults to C<STDOUT>.
+
+=head3 output_fh( [ \*FH ] )
+
+An L<IO::Handle> filehandle for printing the HTML report to.  Defaults to the
+same object as L</stdout>.
+
+B<Note:> If L</silent> is on, printing to C<output_fh> will still occur.  (that
+is, assuming you've opened a different file, B<not> C<STDOUT>).
+
+=head3 output_file( $file_name )
+
+Not strictly an accessor - this is a shortcut for setting L</output_fh>,
+equivalent to:
+
+  $fmt->output_fh( IO::File->new( $file_name, 'w' ) );
 
 =head3 escape_output( [ $boolean ] )
 
@@ -503,7 +578,8 @@ Defaults to C<0>.
 =head3 html( [ \$html ] )
 
 This is a reference to the scalar containing the html generated on the last
-test run.  Useful if you have L</silent> on.
+test run.  Useful if you have L</silent> on, and have not provided a custom
+L</output_fh> to write the report to.
 
 =head3 tests( [ \@test_files ] )
 

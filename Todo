@@ -1,3 +1,10 @@
+Reported & patched by Michael Hendricks (sponsored by Grant Street Group)
+   * If tests are aggregated in multiple phases (per http://xrl.us/bedfih),
+     TAP::Harness calls prepare() once for each phase.  Emptying the
+     sessions array on each call to prepare() discards all but the last
+     phase of test aggregation.  That caused the HTML output to show only
+     the results from the final phase.  By emptying the sessions array only
+     during initialization, all phases are accumulated and formatted correctly.
 
 Reports from Nathan S. Watson-Haigh:
    * POD bug: 'incline' rather than inline
@@ -14,7 +21,7 @@ Script still running bug
    * only on big test outputs
    * jquery cleanup?
 
-Sometimes test details don't collaps properly!
+Sometimes test details don't collapse properly!
    * doesn't happen in FireFox 3?
    * related to the scrollTo?
    * could hide & show the tr after the slideToggle?
