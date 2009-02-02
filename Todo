@@ -1,16 +1,17 @@
-Reported & patched by Michael Hendricks (sponsored by Grant Street Group)
-   * If tests are aggregated in multiple phases (per http://xrl.us/bedfih),
-     TAP::Harness calls prepare() once for each phase.  Emptying the
-     sessions array on each call to prepare() discards all but the last
-     phase of test aggregation.  That caused the HTML output to show only
-     the results from the final phase.  By emptying the sessions array only
-     during initialization, all phases are accumulated and formatted correctly.
+More tests!
+ * parse the generated output
+ * check the view given to the TT view
 
 Reports from Nadim Khemir:
    * integrate into build scripts (eg: M::B)
    * possible to open the test file and show the test itself?
    * why the need to stop using Test::Harness?
 
+Various bug reports (+ Patch!) by Hemingway:
+   * https://rt.cpan.org/Ticket/Display.html?id=41457
+
+Progress console:
+   * https://rt.cpan.org/Ticket/Display.html?id=40627
 
 Script still running bug
    * when you navigate away from page
@@ -27,7 +28,7 @@ sort by cols
    * test file
    * percent
 
-support file output
+support file output - in progress
    * prove --html=output.html
    * allow output to STDOUT
    * write an App::Prove plugin
@@ -40,8 +41,4 @@ expand failed tests
 collapse current test (from halway down big tests, maybe a mouseover file or something)
 
 Give the test suite a title...
-
-More tests!
- * parse the generated output
- * check the view given to the TT view
 

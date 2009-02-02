@@ -2,7 +2,7 @@ package App::Prove::Plugin::HTML;
 
 =head1 NAME
 
-App::Prove::Plugin::HTML - prove plugin for TAP::Formatter::HTML
+App::Prove::Plugin::HTML - a prove plugin for HTML output
 
 =head1 SYNOPSIS
 
@@ -45,3 +45,39 @@ sub import {
 
 __END__
 
+=head1 DESCRIPTION
+
+This is a quick & dirty first attempt at making L<TAP::Formatter::HTML> a bit
+easier to use.  It will likely change.
+
+My original goal was to be able to specify all the args on the cmdline, ala:
+
+  % prove --html=output.html
+
+And have this map onto:
+
+  % prove -PHTML=output.html -m --formatter=TAP::Formatter::HTML
+
+Though this is currently not possible with the way the L<App::Prove> plugin
+system works.
+
+=head1 BUGS
+
+Please use http://rt.cpan.org to report any issues.
+
+=head1 AUTHOR
+
+Steve Purkis <spurkis@cpan.org>
+
+=head1 COPYRIGHT
+
+Copyright (c) 2008-9 Steve Purkis <spurkis@cpan.org>, S Purkis Consulting Ltd.
+All rights reserved.
+
+This module is released under the same terms as Perl itself.
+
+=head1 SEE ALSO
+
+L<prove>, L<App::Prove>, L<TAP::Formatter::HTML>
+
+=cut

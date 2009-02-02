@@ -7,6 +7,7 @@ All changes by Steve Purkis, unless otherwise noted.
     +	you can now specify an output file for the HTML to be written to!
     +	you can now set some config params using environment vars. this should
 	make it easier to configure without having to write custom code.
+    +	started writing an App::Prove plugin
     +	fixed RT #40306: Typo in TAP::Formatter::HTML (incline_js)
 	(also reported by Nathan S. Watson-Haigh)
     +	applied patch from Michael Hendricks (who's work on this was sponsored
