@@ -366,3 +366,8 @@ ul.test-out li.unk { /* unk=unknown */
 ul.test-out li.stat { /* stat=exit-status */
 	color: #ff0000;
 }
+
+ul.test-out li.yml { /* yml=yaml */
+	white-space: pre;
+}
+
