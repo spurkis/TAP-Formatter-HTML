@@ -47,6 +47,7 @@ use strict;
 use warnings;
 
 use URI;
+use URI::file;
 use Template;
 use POSIX qw( ceil );
 use IO::File;
@@ -93,6 +94,7 @@ use constant severity_map => {
 			     };
 
 our $VERSION = '0.07';
+our $FAKE_WIN32_URIS = 0; # for testing only
 
 sub _initialize {
     my ($self, $args) = @_;
@@ -295,6 +297,12 @@ sub check_uris {
 	# take them out of the list to verify, push them back on later
 	my @uris = splice( @$uri_list, 0, scalar @$uri_list );
 	foreach my $uri (@uris) {
+	    if (($^O =~ /win32/i or $FAKE_WIN32_URIS)
+		and $uri =~ /^(?:(?:file)|(?:\w:)?\\)/) {
+		$uri = URI::file->new($uri, 'win32');
+	    } else {
+	        $uri = URI->new( $uri );
+    	    }
 	    $uri = URI->new( $uri );
 	    if ($uri->scheme && $uri->scheme eq 'file') {
 		my $path = $uri->path;
@@ -534,13 +542,17 @@ css, javascript and templates are all configurable.
 
 =head2 CONSTRUCTOR
 
-=head3 new( \%args )
+=head3 new
+
+  my $fmt = $class->new({ %args });
 
 =head2 ACCESSORS
 
 All chaining L<accessors>:
 
-=head3 verbosity( [ $v ] )
+=head3 verbosity
+
+  $fmt->verbosity( [ $v ] )
 
 Verbosity level, as defined in L<TAP::Harness/new>:
 
@@ -554,19 +566,26 @@ Note that the report is also available via L</html>.  You can also provide a
 custom L</output_fh> (aka L</output_file>) that will be used instead of
 L</stdout>, even if I<silent> is on.
 
-=head3 stdout( [ \*FH ] )
+=head3 stdout
+
+  $fmt->stdout( [ \*FH ] );
 
 An L<IO::Handle> filehandle for catching standard output.  Defaults to C<STDOUT>.
 
-=head3 output_fh( [ \*FH ] )
+=head3 output_fh
+
+  $fmt->output_fh( [ \*FH ] );
 
 An L<IO::Handle> filehandle for printing the HTML report to.  Defaults to the
 same object as L</stdout>.
 
-B<Note:> If L</silent> is on, printing to C<output_fh> will still occur.  (that
-is, assuming you've opened a different file, B<not> C<STDOUT>).
+B<Note:> If L</verbosity> is set to C<silent>, printing to C<output_fh> will
+still occur.  (that is, assuming you've opened a different file, B<not>
+C<STDOUT>).
 
-=head3 output_file( $file_name )
+=head3 output_file
+
+  $fmt->output_file( $file_name )
 
 Not strictly an accessor - this is a shortcut for setting L</output_fh>,
 equivalent to:
@@ -576,34 +595,46 @@ equivalent to:
 You can set this with the C<TAP_FORMATTER_HTML_OUTFILE=/path/to/file>
 environment variable
 
-=head3 escape_output( [ $boolean ] )
+=head3 escape_output
+
+  $fmt->escape_output( [ $boolean ] );
 
 If set, all output to L</stdout> is escaped.  This is probably only useful
 if you're testing the formatter.
 Defaults to C<0>.
 
-=head3 html( [ \$html ] )
+=head3 html
+
+  $fmt->html( [ \$html ] );
 
 This is a reference to the scalar containing the html generated on the last
-test run.  Useful if you have L</silent> on, and have not provided a custom
-L</output_fh> to write the report to.
+test run.  Useful if you have L</verbosity> set to C<silent>, and have not
+provided a custom L</output_fh> to write the report to.
 
-=head3 tests( [ \@test_files ] )
+=head3 tests
+
+  $fmt->tests( [ \@test_files ] )
 
 A list of test files we're running, set by L<TAP::Parser>.
 
-=head3 session_class( [] )
+=head3 session_class
+
+  $fmt->session_class( [ $class ] )
 
 Class to use for L<TAP::Parser> test sessions.  You probably won't need to use
 this unless you're hacking or sub-classing the formatter.
 Defaults to L<TAP::Formatter::HTML::Session>.
 
-=head3 sessions( [ \@sessions ] )
+=head3 sessions
+
+  $fmt->sessions( [ \@sessions ] )
 
 Test sessions added by L<TAP::Parser>.  You probably won't need to use this
 unless you're hacking or sub-classing the formatter.
 
-=head3 template_processor( [ $processor ] )
+=head3 template_processor
+
+  $fmt->template_processor( [ $processor ] )
 
 The template processor to use.
 Defaults to a TT2 L<Template> processor with the following config:
@@ -612,7 +643,9 @@ Defaults to a TT2 L<Template> processor with the following config:
   COMPILE_EXT  => '.ttc',
   INCLUDE_PATH => join(':', @INC),
 
-=head3 template( [ $file_name ] )
+=head3 template
+
+  $fmt->template( [ $file_name ] )
 
 The template file to load.
 Defaults to C<TAP/Formatter/HTML/default_report.tt2>.
@@ -620,7 +653,9 @@ Defaults to C<TAP/Formatter/HTML/default_report.tt2>.
 You can set this with the C<TAP_FORMATTER_HTML_TEMPLATE=/path/to.tt> environment
 variable.
 
-=head3 css_uris( [ \@uris ] )
+=head3 css_uris
+
+  $fmt->css_uris( [ \@uris ] )
 
 A list of L<URI>s (or strings) to include as external stylesheets in <style>
 tags in the head of the document.
@@ -631,7 +666,11 @@ Defaults to:
 You can set this with the C<TAP_FORMATTER_HTML_CSS_URIS=/path/to.css:/another/path.css>
 environment variable.
 
-=head3 js_uris( [ \@uris ] )
+If you're using Win32, please see L</WIN32 URIS>.
+
+=head3 js_uris
+
+  $fmt->js_uris( [ \@uris ] )
 
 A list of L<URI>s (or strings) to include as external stylesheets in <style>
 tags in the head of the document.
@@ -642,17 +681,25 @@ Defaults to:
 You can set this with the C<TAP_FORMATTER_HTML_JS_URIS=/path/to.js:/another/path.js>
 environment variable.
 
-=head3 inline_css( [ $css ] )
+If you're using Win32, please see L</WIN32 URIS>.
+
+=head3 inline_css
+
+  $fmt->inline_css( [ $css ] )
 
 If set, the formatter will include the CSS code in a <style> tag in the head of
 the document.
 
-=head3 inline_js( [ $javascript ] )
+=head3 inline_js
+
+  $fmt->inline_js( [ $javascript ] )
 
 If set, the formatter will include the JavaScript code in a <script> tag in the
 head of the document.
 
-=head3 minify( [ $boolean ] )
+=head3 minify
+
+  $fmt->minify( [ $boolean ] )
 
 If set, the formatter will attempt to reduce the size of the generated report,
 they can get pretty big if you're not careful!  Defaults to C<1> (true).
@@ -660,7 +707,9 @@ they can get pretty big if you're not careful!  Defaults to C<1> (true).
 B<Note:> This currently just means... I<remove tabs at start of a line>.  It
 may be extended in the future.
 
-=head3 abs_file_paths( [ $ boolean ] )
+=head3 abs_file_paths
+
+  $fmt->abs_file_paths( [ $ boolean ] )
 
 If set, the formatter will attempt to convert any relative I<file> JS & css
 URI's listed in L</css_uris> & L</js_uris> to absolute paths.  This is handy if
@@ -668,7 +717,9 @@ you'll be sending moving the HTML output around on your harddisk, (but not so
 handy if you move it to another machine - see L</force_inline_css>).
 Defaults to I<1>.
 
-=head3 force_inline_css( [ $boolean ] )
+=head3 force_inline_css
+
+  $fmt->force_inline_css( [ $boolean ] )
 
 If set, the formatter will attempt to slurp in any I<file> css URI's listed in
 L</css_uris>, and append them to L</inline_css>.  This is handy if you'll be
@@ -680,7 +731,9 @@ variable.
 
 =head2 API METHODS
 
-=head3 $html = $fmt->summary( $aggregator )
+=head3 summary
+
+  $html = $fmt->summary( $aggregator )
 
 C<summary> produces a summary report after all tests are run.  C<$aggregator>
 should be a L<TAP::Parser::Aggregator>.
@@ -715,6 +768,35 @@ You can use environment variables to customize the behaviour of TFH:
   TAP_FORMATTER_HTML_TEMPLATE=/path/to.tt
 
 This should save you from having to write custom code for simple cases.
+
+=head1 WIN32 URIS
+
+This module tries to do the right thing when fed Win32 File I<paths> as File
+URIs to both L</css_uris> and L</js_uris>, eg:
+
+  C:\some\path
+  file:///C:\some\path
+
+While I could lecture you what a valid file URI is and point you at:
+
+http://blogs.msdn.com/ie/archive/2006/12/06/file-uris-in-windows.aspx
+
+Which basically says the above are invalid URIs, and you should use:
+
+  file:///C:/some/path
+  # ie: no backslashes
+
+I also realize it's convenient to chuck in a Win32 file path, as you can on
+Unix.  So if you're running under Win32, C<TAP::Formatter::HTML> will look for
+a signature C<'X:\'>, C<'\'> or C<'file:'> at the start of each URI to see if
+you are referring to a file or another type of URI.
+
+Note that you must use 'C<file:///C:\blah>' with I<3 slashes> otherwie 'C<C:>'
+will become your I<host>, which is probably not what you want.  See
+L<URI::file> for more details.
+
+I realize this is a pretty basic algorithm, but it should handle most cases.
+If it doesn't work for you, you can always construct a valid File URI instead.
 
 =head1 BUGS
 
