@@ -30,6 +30,7 @@ my $build = Module::Build->new
 			  'URI'         => '1.35',
 			  'Template'    => '2.14',
 			  'TAP::Parser' => '3.10',
+			  'File::Temp'  => '0.17',
 		         },
    build_requires     => {
 			  'Test::More'    => '0.01',

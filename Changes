@@ -6,6 +6,8 @@ All changes by Steve Purkis, unless otherwise noted.
 0.08
     +	applied Steffen Schwigon's patch to display YAML TAP as
 	pre-formatted text.
+    +	fixed RT #43871: missing dep on File::Temp 0.17
+	[reported by Paddy Newman]
 
 0.07
     +	you can now specify an output file for the HTML to be written to!
