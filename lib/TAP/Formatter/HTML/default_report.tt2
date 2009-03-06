@@ -90,19 +90,19 @@ Developer Notes:
 									  [%- IF result.is_test %]
 										[%- current_test = current_test + 1 -%]
 										<td class="[% result.short_test_status _ ' ' %][% IF result.is_ok %]p[% ELSE %]f[% END %]"><a class="TS" href="#[% result.html_id %]"> </a></td>
-								[%#
+								[%#-
 								Note: break up the tests at 100 so as to preserve sanity.
 								This may leave some tests looking silly (if there's only 101)
 								but in the case of 1000s of tests, it makes this more readable.
 								-%]
 										[%- IF (current_test % 100) == 0 %]
-								</tr><tr>[% END -%]
+								</tr><tr>[%- END -%]
 								    [%- END -%]
 										[%- END -%]
 									[%- ELSIF test.skip_all -%][%# below: class 's' = skip-ok -%]
-									<td class="s" width="100%"><a href="#" title="[% test.results.first.raw | html %]">&nbsp;</a></td>
+									<td class="s" width="100%"><a class="TS" href="#" title="[% test.results.first.raw | html %]">&nbsp;</a></td>
 									[%- ELSE -%][%# below: class 'n' = not-ok -%]
-									<td class="stub n" width="100%"><a href="#" title="No tests run!">&nbsp;</a></td>
+									<td class="stub n" width="100%"><a class="TS" href="#" title="No tests run!">&nbsp;</a></td>
 									[%- END %]
 								</tr>
 							</table>

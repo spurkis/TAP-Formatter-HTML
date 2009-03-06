@@ -136,9 +136,10 @@ sub as_report {
     my ($self) = @_;
     my $p = $self->parser;
     my $r = {
-	    test => $self->test,
-	    results => $self->results,
-	   };
+	     test => $self->test,
+	     html_id => $self->html_id,
+	     results => $self->results,
+	    };
 
     # add parser info:
     for my $key (qw(

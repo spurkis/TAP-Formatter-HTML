@@ -10,6 +10,8 @@ All changes by Steve Purkis, unless otherwise noted.
 	[reported by Paddy Newman]
     +	fixed RT #37983: CSS and JS Paths on Win32 get mangled
 	and documented solution. [reported by Chris Davaz]
+    +	wrote some selenium tests, finally.  found & fixed small bug where
+	a test's html_id wasn't being set.
 
 0.07
     +	you can now specify an output file for the HTML to be written to!
