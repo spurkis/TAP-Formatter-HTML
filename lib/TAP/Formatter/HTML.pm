@@ -672,7 +672,7 @@ If you're using Win32, please see L</WIN32 URIS>.
 
   $fmt->js_uris( [ \@uris ] )
 
-A list of L<URI>s (or strings) to include as external stylesheets in <style>
+A list of L<URI>s (or strings) to include as external stylesheets in <script>
 tags in the head of the document.
 Defaults to:
 

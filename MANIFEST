@@ -3,6 +3,7 @@ Changes
 examples/DBD-SQLite-example.html
 examples/jquery-1.2.3.pack.js
 examples/test-output.html
+lib/App/Prove/Plugin/HTML.pm
 lib/TAP/Formatter/HTML.pm
 lib/TAP/Formatter/HTML/default_page.css
 lib/TAP/Formatter/HTML/default_report.css
@@ -19,6 +20,12 @@ t/02_escape_output.t
 t/03_silent.t
 t/04_really_quiet.t
 t/05_quiet.t
+t/06_output.t
+t/07_multiple_aggregate.t
+t/08_env_vars.t
+t/09_empty_testdir.t
+t/10_win32.t
+t/99_test_pod.t
 t/data/01_pass.pl
 t/data/02_fail.pl
 t/data/03_plan_fail.pl
@@ -30,4 +37,7 @@ t/data/08_html_in_output.pl
 t/data/09_skip_error.pl
 t/data/10_todo_skip.pl
 t/data/11_lots_of_tests.pl
+t/lib/FileTempTFH.pm
+t/selenium/server.pl
+t/selenium_basic.t
 Todo
