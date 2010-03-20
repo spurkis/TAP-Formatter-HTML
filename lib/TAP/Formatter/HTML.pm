@@ -452,6 +452,7 @@ sub _slurp_uris {
 		if (open my $fh, $path) {
 		    local $/ = undef;
 		    $$slurp_to_ref .= <$fh>;
+		    $$slurp_to_ref .= "\n";
 		} else {
 		    $self->log("Warning: couldn't open $path: $!");
 		}
