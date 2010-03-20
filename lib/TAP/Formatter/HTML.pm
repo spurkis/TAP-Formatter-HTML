@@ -419,25 +419,11 @@ sub slurp_css {
     my ($self) = shift;
     $self->info("slurping css files inline");
 
-    my $inline_css = $self->inline_css || '';
-    foreach my $uri (@{ $self->css_uris }) {
-	my $scheme = $uri->scheme;
-	if ($scheme && $scheme eq 'file') {
-	    my $path = $uri->path;
-	    if (-e $path) {
-		if (open my $fh, $path) {
-		    local $/ = undef;
-		    $inline_css .= <$fh>;
-		} else {
-		    $self->log("Warning: couldn't open $path: $!");
-		}
-	    } else {
-		$self->log("Warning: couldn't read $path: file does not exist!");
-	    }
-	} else {
-	    $self->log("Warning: can't include $uri inline: not a file uri");
-	}
-    }
+    my $inline_css = '';
+    $self->_slurp_uris( $self->css_uris, \$inline_css );
+
+    # append any inline css so it gets interpreted last:
+    $inline_css .= "\n" . $self->inline_css if $self->inline_css;
 
     $self->inline_css( $inline_css );
 }
@@ -446,15 +432,26 @@ sub slurp_js {
     my ($self) = shift;
     $self->info("slurping js files inline");
 
-    my $inline_js = $self->inline_js || '';
-    foreach my $uri (@{ $self->js_uris }) {
+    my $inline_js = '';
+    $self->_slurp_uris( $self->js_uris, \$inline_js );
+
+    # append any inline js so it gets interpreted last:
+    $inline_js .= "\n" . $self->inline_js if $self->inline_js;
+
+    $self->inline_js( $inline_js );
+}
+
+sub _slurp_uris {
+    my ($self, $uris, $slurp_to_ref) = @_;
+
+    foreach my $uri (@$uris) {
 	my $scheme = $uri->scheme;
 	if ($scheme && $scheme eq 'file') {
 	    my $path = $uri->path;
 	    if (-e $path) {
 		if (open my $fh, $path) {
 		    local $/ = undef;
-		    $inline_js .= <$fh>;
+		    $$slurp_to_ref .= <$fh>;
 		} else {
 		    $self->log("Warning: couldn't open $path: $!");
 		}
@@ -466,8 +463,9 @@ sub slurp_js {
 	}
     }
 
-    $self->inline_js( $inline_js );
+    return $slurp_to_ref;
 }
+
 
 
 sub log {
@@ -770,7 +768,9 @@ variable.
 If set, the formatter will attempt to slurp in any I<file> javascript URI's listed in
 L</js_uris>, and append them to L</inline_js>.  This is handy if you'll be
 sending the output around - that way you don't have to send javascript files too.
-Defaults to I<1>.
+
+Note that including jquery inline doesn't work with some browsers, haven't
+investigated why.  Defaults to I<0>.
 
 You can set this with the C<TAP_FORMATTER_HTML_FORCE_INLINE_JS=0|1> environment
 variable.
@@ -855,7 +855,7 @@ Steve Purkis <spurkis@cpan.org>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2008 Steve Purkis <spurkis@cpan.org>, S Purkis Consulting Ltd.
+Copyright (c) 2008-2010 Steve Purkis <spurkis@cpan.org>, S Purkis Consulting Ltd.
 All rights reserved.
 
 This module is released under the same terms as Perl itself.
