@@ -13,11 +13,14 @@
 	left: 8px;
 	top: 8px;
 	padding: 2px;
-	width: 100px;
-	height: 26px;
 	font-size: small;
 	background-color: #eeffcc;
 	opacity: 0.5;
+}
+
+#menu ul {
+        margin: 0px;
+        padding: 5px;
 }
 
 #menu li {
@@ -161,7 +164,7 @@ table.detail td.percent {
 }
 
 /******************************************************************************
- * Colouring the file & percentage columns
+ * Colouring the file + percentage columns
  */
 table.detail tr.percent td.c {
 	padding-left: 2px;

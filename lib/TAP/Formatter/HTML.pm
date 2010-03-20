@@ -37,7 +37,8 @@ TAP::Formatter::HTML - TAP Test Harness output delegate for html output
  # you can use your own customized templates too:
  $fmt->template('custom.tt2')
      ->template_processor( Template->new )
-     ->force_inline_css(0);
+     ->force_inline_css(0)
+     ->force_inline_js(0);
 
 =cut
 
@@ -62,7 +63,7 @@ use TAP::Formatter::HTML::Session;
 use base qw( TAP::Base );
 use accessors qw( verbosity stdout output_fh escape_output tests session_class sessions
 		  template_processor template html html_id_iterator minify
-		  css_uris js_uris inline_css inline_js abs_file_paths force_inline_css );
+		  css_uris js_uris inline_css inline_js abs_file_paths force_inline_css force_inline_js );
 
 use constant default_session_class => 'TAP::Formatter::HTML::Session';
 use constant default_template      => 'TAP/Formatter/HTML/default_report.tt2';
@@ -113,6 +114,7 @@ sub _initialize {
          ->abs_file_paths( 1 )
          ->abs_file_paths( 1 )
          ->force_inline_css( 1 )
+         ->force_inline_js( 0 )
          ->session_class( $self->default_session_class )
          ->template_processor( $self->default_template_processor )
          ->template( $self->default_template )
@@ -142,9 +144,14 @@ sub check_for_overrides_in_env {
 	$self->output_file( $file );
     }
 
-    my $force = $ENV{TAP_FORMATTER_HTML_FORCE_INLINE_CSS};
-    if (defined( $force )) {
-	$self->force_inline_css( $force );
+    my $force_css = $ENV{TAP_FORMATTER_HTML_FORCE_INLINE_CSS};
+    if (defined( $force_css )) {
+	$self->force_inline_css( $force_css );
+    }
+
+    my $force_js = $ENV{TAP_FORMATTER_HTML_FORCE_INLINE_JS};
+    if (defined( $force_js )) {
+	$self->force_inline_js( $force_js );
     }
 
     if (my $uris = $ENV{TAP_FORMATTER_HTML_CSS_URIS}) {
@@ -259,6 +266,7 @@ sub generate_report {
 
     $self->check_uris;
     $self->slurp_css if $self->force_inline_css;
+    $self->slurp_js if $self->force_inline_js;
 
     my $params = {
 		  report => $r,
@@ -433,6 +441,34 @@ sub slurp_css {
 
     $self->inline_css( $inline_css );
 }
+
+sub slurp_js {
+    my ($self) = shift;
+    $self->info("slurping js files inline");
+
+    my $inline_js = $self->inline_js || '';
+    foreach my $uri (@{ $self->js_uris }) {
+	my $scheme = $uri->scheme;
+	if ($scheme && $scheme eq 'file') {
+	    my $path = $uri->path;
+	    if (-e $path) {
+		if (open my $fh, $path) {
+		    local $/ = undef;
+		    $inline_js .= <$fh>;
+		} else {
+		    $self->log("Warning: couldn't open $path: $!");
+		}
+	    } else {
+		$self->log("Warning: couldn't read $path: file does not exist!");
+	    }
+	} else {
+	    $self->log("Warning: can't include $uri inline: not a file uri");
+	}
+    }
+
+    $self->inline_js( $inline_js );
+}
+
 
 sub log {
     my $self = shift;
@@ -729,6 +765,16 @@ Defaults to I<1>.
 You can set this with the C<TAP_FORMATTER_HTML_FORCE_INLINE_CSS=0|1> environment
 variable.
 
+=head3 force_inline_js( [ $boolean ] )
+
+If set, the formatter will attempt to slurp in any I<file> javascript URI's listed in
+L</js_uris>, and append them to L</inline_js>.  This is handy if you'll be
+sending the output around - that way you don't have to send javascript files too.
+Defaults to I<1>.
+
+You can set this with the C<TAP_FORMATTER_HTML_FORCE_INLINE_JS=0|1> environment
+variable.
+
 =head2 API METHODS
 
 =head3 summary
@@ -763,6 +809,7 @@ You can use environment variables to customize the behaviour of TFH:
 
   TAP_FORMATTER_HTML_OUTFILE=/path/to/file
   TAP_FORMATTER_HTML_FORCE_INLINE_CSS=0|1
+  TAP_FORMATTER_HTML_FORCE_INLINE_JS=0|1
   TAP_FORMATTER_HTML_CSS_URIS=/path/to.css:/another/path.css
   TAP_FORMATTER_HTML_JS_URIS=/path/to.js:/another/path.js
   TAP_FORMATTER_HTML_TEMPLATE=/path/to.tt

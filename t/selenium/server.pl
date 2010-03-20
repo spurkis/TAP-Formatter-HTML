@@ -8,6 +8,15 @@ my $sel_rc_args = "-singleWindow -port $sel_rc_port";
 my $sel_rc      = Alien::SeleniumRC::Server->new( $sel_rc_args );
 $sel_rc->start;
 
+while (1) {
+    print "type 'q' to quit\n";
+    my $i = <>;
+    last if ($i =~ /q/);
+}
+
+$sel_rc->stop;
+
+warn "hack alert: you'll likely need to kill the java process running selenium\n";
 
 BEGIN{
 package Alien::SeleniumRC::Server;
