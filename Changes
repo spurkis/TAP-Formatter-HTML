@@ -4,6 +4,7 @@ Revision history for 'TAP-Formatter-HTML' Perl module
 All changes by Steve Purkis, unless otherwise noted.
 
 0.09
+    +	upgraded to jQuery 1.4.2
     +	updated App::Prove::Plugin::HTML to simplify cmdline usage to the
 	extent possible.
     +	fixed RT #41457 & RT #49621: applied Neil Hemingway, Tim Esselens, and
@@ -17,8 +18,9 @@ All changes by Steve Purkis, unless otherwise noted.
 	    +	fixed bug: nothing happens when I click on the test output.
 	    +	XHTML support
     +	fixed bug: click on summary changes location
-    +	upgraded to jQuery 1.4.2
     +	fixed 2 minor javascript bugs where '#' was being used as a jQuery id ref
+    +	added new feature: column sorting via Christian Bach's jquery.tablesorter
+	plugin (bundled from http://tablesorter.com). optional.
 
 
 0.08
