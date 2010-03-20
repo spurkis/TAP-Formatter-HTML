@@ -4,13 +4,20 @@ TAP::Formatter::HTML - TAP Test Harness output delegate for html output
 
 =head1 SYNOPSIS
 
- # cmdline usage:
- % prove -m -Q --formatter=TAP::Formatter::HTML >output.html
+ ##
+ ## command-line usage (alpha):
+ ##
+ prove -m -Q -P HTML=outfile:out.html,css_uri:style.css,js_uri:foo.js,force_inline_css:0
 
- # currently in alpha:
- % prove -PHTML=output.html -m -Q --formatter=TAP::Formatter::HTML
+ # backwards compat usage:
+ prove -m -Q --formatter=TAP::Formatter::HTML >output.html
 
- # perl usage:
+ # for more detail:
+ perldoc App::Prove::Plugin::HTML
+
+ ##
+ ## perl usage:
+ ##
  use TAP::Harness;
 
  my @tests = glob( 't/*.t' );
@@ -870,6 +877,8 @@ L<http://www.spurkis.org/TAP-Formatter-HTML/DBD-SQLite-example.html>,
 L<http://www.spurkis.org/TAP-Formatter-HTML/Template-example.html>
 
 L<prove> - L<TAP::Harness>'s new cmdline utility.  It's great, use it!
+
+L<App::Prove::Plugin::HTML> - the prove interface for this module.
 
 L<Test::TAP::HTMLMatrix> - the inspiration for this module.  Many good ideas
 were borrowed from it.

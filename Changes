@@ -6,13 +6,15 @@ All changes by Steve Purkis, unless otherwise noted.
 0.09
     +	updated App::Prove::Plugin::HTML to simplify cmdline usage to the
 	extent possible.
-    +	fixed RT #41457: applied Neil Hemingway & Panu Ervamaa's patches, and
-	got everything working.  This addresses:
+    +	fixed RT #41457 & RT #49621: applied Neil Hemingway, Tim Esselens, and
+    	Panu Ervamaa's patches, and got everything working.  This addresses:
 	    +	small changes to the top-left corner menu (default_report.css)
 		to render it corretly with Firefox 3 (Linux)
 	    +	inline_js fix
-	    +	added support for force_inline_js (not on by default)
+	    +	added support for force_inline_js (not on by default, including
+		jQuery inline causes errors)
 	    +	fixed bug in handling of parse_errors in default_report.tt
+	    +	fixed bug: nothing happens when I click on the test output.
 	    +	XHTML support
     +	fixed bug: click on summary changes location
     +	upgraded to jQuery 1.4.2
