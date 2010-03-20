@@ -67,7 +67,7 @@ use accessors qw( verbosity stdout output_fh escape_output tests session_class s
 
 use constant default_session_class => 'TAP::Formatter::HTML::Session';
 use constant default_template      => 'TAP/Formatter/HTML/default_report.tt2';
-use constant default_js_uris       => ['file:TAP/Formatter/HTML/jquery-1.2.6.pack.js',
+use constant default_js_uris       => ['file:TAP/Formatter/HTML/jquery-1.4.2.min.js',
 				       'file:TAP/Formatter/HTML/default_report.js'];
 use constant default_css_uris      => ['file:TAP/Formatter/HTML/default_page.css',
 				       'file:TAP/Formatter/HTML/default_report.css'];
