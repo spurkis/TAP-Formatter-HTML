@@ -3,6 +3,10 @@ Revision history for 'TAP-Formatter-HTML' Perl module
 
 All changes by Steve Purkis, unless otherwise noted.
 
+0.09
+    +	updated App::Prove::Plugin::HTML to simplify cmdline usage to the
+	extent possible.
+
 0.08
     +	applied Steffen Schwigon's patch to display YAML TAP as
 	pre-formatted text.
