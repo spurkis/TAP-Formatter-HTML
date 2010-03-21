@@ -169,6 +169,13 @@ a.file:visited {
 	color: #3333cc;
 }
 
+div.back-up {
+    position: relative;
+    text-align: center;
+    border: 1px solid grey;
+    width: 100%;
+}
+
 /******************************************************************************
  * The time column
  */

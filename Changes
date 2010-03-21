@@ -21,6 +21,8 @@ All changes by Steve Purkis, unless otherwise noted.
     +	fixed 2 minor javascript bugs where '#' was being used as a jQuery id ref
     +	added new feature: column sorting via Christian Bach's jquery.tablesorter
 	plugin (bundled from http://tablesorter.com). optional.
+    +	added new feature: up to top of test when the test filename is no longer
+	visible.
 
 
 0.08
