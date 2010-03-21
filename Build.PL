@@ -31,7 +31,7 @@ my $build = Module::Build->new
 			  'Template'    => '2.14',
 			  'TAP::Parser' => '3.10',
 			  'File::Temp'  => '0.17',
-			  'Test::Harness' => '3.21',
+			  'Test::Harness' => '3.17',
 		         },
    build_requires     => {
 			  'Test::More'    => '0.01',
