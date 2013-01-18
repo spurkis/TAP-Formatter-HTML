@@ -5,6 +5,8 @@ All changes by Steve Purkis, unless otherwise noted.
 
 0.10
     +	fixed RT #82738: color method was not implemented.
+    +   fixed RT #74364: TT2 INCLUDE_PATH no longer set to all dirs in @INC,
+        now it is set to parent directory TAP::Formatter::HTML was loaded from.
 
 0.09
     +	upgraded to jQuery 1.4.2

@@ -79,13 +79,6 @@ use constant default_js_uris       => ['file:TAP/Formatter/HTML/jquery-1.4.2.min
 				       'file:TAP/Formatter/HTML/default_report.js'];
 use constant default_css_uris      => ['file:TAP/Formatter/HTML/default_page.css',
 				       'file:TAP/Formatter/HTML/default_report.css'];
-use constant default_template_processor =>
-  Template->new(
-		# arguably shouldn't compile as this is only used once
-		COMPILE_DIR  => catdir( tempdir( CLEANUP => 1 ), 'TAP-Formatter-HTML' ),
-		COMPILE_EXT  => '.ttc',
-		INCLUDE_PATH => join(':', @INC),
-	       );
 
 use constant severity_map => {
 			      ''          => 0,
@@ -178,6 +171,18 @@ sub check_for_overrides_in_env {
 
     return $self;
 }
+
+sub default_template_processor {
+    my $path = __FILE__;
+    $path =~ s/.TAP.Formatter.HTML.pm$//;
+    return Template->new(
+        # arguably shouldn't compile as this is only used once
+        COMPILE_DIR  => catdir( tempdir( CLEANUP => 1 ), 'TAP-Formatter-HTML' ),
+        COMPILE_EXT  => '.ttc',
+        INCLUDE_PATH => $path,
+    );
+}
+
 
 sub output_file {
     my ($self, $file) = @_;
@@ -684,7 +689,10 @@ Defaults to a TT2 L<Template> processor with the following config:
 
   COMPILE_DIR  => catdir( tempdir(), 'TAP-Formatter-HTML' ),
   COMPILE_EXT  => '.ttc',
-  INCLUDE_PATH => join(':', @INC),
+  INCLUDE_PATH => parent directory TAP::Formatter::HTML was loaded from
+
+Note: INCLUDE_PATH used to be set to: C<join(':', @INC)> but this was causing
+issues on systems with > 64 dirs in C<@INC>.  See RT #74364 for details.
 
 =head3 template
 
