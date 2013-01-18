@@ -3,6 +3,9 @@ Revision history for 'TAP-Formatter-HTML' Perl module
 
 All changes by Steve Purkis, unless otherwise noted.
 
+0.10
+    +	fixed RT #82738: color method was not implemented.
+
 0.09
     +	upgraded to jQuery 1.4.2
     +	updated App::Prove::Plugin::HTML to simplify cmdline usage to the
