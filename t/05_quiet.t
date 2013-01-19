@@ -28,5 +28,5 @@ STDOUT->fdopen( fileno($stdout_orig_fh), 'w' )
 
 my $stdout = $stdout_fh->get_all_output || '';
 like( $stdout, qr|\A(?!<html)|ms, 'expect other content before HTML report' );
-like( $stdout, qr|^<html.+/html>\Z|ms, 'HTML report should be output last' );
+like( $stdout, qr|^<html.+/html>\s*\Z|ms, 'HTML report should be output last' );
 

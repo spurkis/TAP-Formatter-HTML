@@ -18,6 +18,9 @@ my $stdout_orig_fh = IO::File->new_from_fd( fileno(STDOUT), 'w' )
 STDOUT->fdopen( fileno($stdout_fh), 'w' )
   or die "Error re-directing STDOUT: $!";
 
+# Note: strangely this doesn't fail on Windows, even though we're
+# running 2 tests... worth pointing out it may be due to lack of
+# output...
 my @tests = ( 't/data/01_pass.pl', 't/data/02_fail.pl' );
 {
     my $f = TAP::Formatter::HTML->new({ escape_output => 1, silent => 1 });

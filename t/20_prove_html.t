@@ -51,7 +51,7 @@ is( $ENV{TAP_FORMATTER_HTML_FORCE_INLINE_JS}, 0, 'ENV: force_inline_js' );
 
 
 my $out = $tmp->get_all_output || '';
-like( $out, qr|\A<.+/html>\Z|ms, 'HTML report output to file' );
+like( $out, qr|\A\s*<.+/html>\s*\Z|ms, 'HTML report output to file' );
 like( $out, qr|style.css|,  'css_uri: style.css' );
 like( $out, qr|custom.css|, 'css_uri: custom.css' );
 like( $out, qr|jquery.js|,  'js_uri: jquery.css' );

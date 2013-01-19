@@ -17,7 +17,8 @@ my $stdout_orig_fh = IO::File->new_from_fd( fileno(STDOUT), 'w' )
 STDOUT->fdopen( fileno($stdout_fh), 'w' )
   or die "Error re-directing STDOUT: $!";
 
-my @tests = ( 't/data/01_pass.pl', 't/data/02_fail.pl' );
+# Only run 1 test or tests will hang on Windows (RT #81922)
+my @tests = ( 't/data/01_pass.pl' );
 my $f = TAP::Formatter::HTML->new({ escape_output => 1, force_inline_css => 0 });
 my $h = TAP::Harness->new({ merge => 1, formatter => $f });
 
@@ -28,5 +29,5 @@ STDOUT->fdopen( fileno($stdout_orig_fh), 'w' )
 
 my $stdout = $stdout_fh->get_all_output || '';
 isnt( $stdout, '', 'should be lots of output to stdout' );
-ok( $stdout =~ /^# ok 1 - im ok$/ms, 'found an escaped line of output' );
+ok( $stdout =~ /^# ok 1 - im ok/ms, 'found an escaped line of output' );
 
