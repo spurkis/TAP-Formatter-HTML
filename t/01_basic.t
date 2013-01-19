@@ -18,7 +18,8 @@ my $stdout_orig_fh = IO::File->new_from_fd( fileno(STDOUT), 'w' )
 STDOUT->fdopen( fileno($stdout_fh), 'w' )
   or die "Error redirecting STDOUT: $!";
 
-my @tests = glob( 't/data/*.pl' );
+# Only run 1 test on Windows or tests will hang (RT #81922)
+my @tests = ($^O =~ /win/i ? 't/data/01_pass.pl' : glob( 't/data/*.pl' ));
 my $h = TAP::Harness->new({ merge => 1, formatter_class => 'TAP::Formatter::HTML' });
 $h->runtests(@tests);
 

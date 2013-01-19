@@ -27,5 +27,5 @@ STDOUT->fdopen( fileno($stdout_orig_fh), 'w' )
   or die "Error resetting STDOUT: $!";
 
 my $stdout = $stdout_fh->get_all_output || '';
-like( $stdout, qr|\A<.+/html>\Z|ms, 'should be no output to stdout other than HTML report' );
+like( $stdout, qr|\A\s*<.+/html>\s*\Z|ms, 'should be no output to stdout other than HTML report' );
 
