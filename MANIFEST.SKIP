@@ -4,6 +4,7 @@
 ,v$
 \B\.svn\b
 \B\.cvsignore$
+\.git
 
 # Avoid Makemaker generated and utility files.
 \bMakefile$
@@ -37,3 +38,5 @@
 \B\._
 # Avoid archives of this distribution
 \bTAP-Formatter-HTML-[\d\.\_]+
+^MYMETA\.yml$
+^MYMETA\.json$
