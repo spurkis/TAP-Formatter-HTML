@@ -324,7 +324,6 @@ sub check_uris {
 	    } else {
 	        $uri = URI->new( $uri );
     	    }
-	    $uri = URI->new( $uri );
 	    if ($uri->scheme && $uri->scheme eq 'file') {
 		my $path = $uri->path;
 		unless (file_name_is_absolute($path)) {
@@ -334,7 +333,13 @@ sub check_uris {
 		    } else {
 			$new_path = $self->find_in_INC( $path );
 		    }
-		    $uri->path( $new_path ) if ($new_path);
+                    if ($new_path) {
+                        if (($^O =~ /win32/i or $FAKE_WIN32_URIS)) {
+                            $uri = URI::file->new("file://$new_path", 'win32');
+                        } else {
+                            $uri->path( $new_path );
+                        }
+                    }
 		}
 	    }
 	    push @$uri_list, $uri;

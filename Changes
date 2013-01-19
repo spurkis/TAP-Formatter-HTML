@@ -3,6 +3,13 @@ Revision history for 'TAP-Formatter-HTML' Perl module
 
 All changes by Steve Purkis, unless otherwise noted.
 
+0.11
+    +	fixed RT #81922: tests no longer hang on Win32.  Didn't get to the bottom
+        of the issue (likely IPC::Open3 & redirecting STDOUT not playing nicely),
+        but worked around it.
+    +   fixed a bug on Win32 where default js_uris & css_uris were being mangled:
+        "C:%5C..." vs "C:\".  May have affected other Win32 URIs too.
+
 0.10
     +	fixed RT #82738: color method was not implemented.
     +   fixed RT #74364: TT2 INCLUDE_PATH no longer set to all dirs in @INC,
