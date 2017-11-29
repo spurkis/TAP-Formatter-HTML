@@ -278,14 +278,14 @@ sub generate_report {
     my ($self, $r) = @_;
 
     $self->check_uris;
-		if($self->force_inline_css) {
-			$self->slurp_css;
-			$self->css_uris([]);
-		}
-		if($self->force_inline_js) {
-			$self->slurp_js;
-			$self->js_uris([]);
-		}
+    if($self->force_inline_css) {
+        $self->slurp_css;
+        $self->css_uris([]);
+    }
+    if($self->force_inline_js) {
+        $self->slurp_js;
+        $self->js_uris([]);
+    }
 
     my $params = {
 		  report => $r,
