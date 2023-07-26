@@ -18,7 +18,7 @@ use warnings;
 
 use TAP::Formatter::HTML;
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 sub import {
     my ($class, @args) = @_;

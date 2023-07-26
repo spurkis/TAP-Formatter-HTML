@@ -95,7 +95,7 @@ use constant severity_map => {
 			      5 => 'very-high',
 			     };
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 our $FAKE_WIN32_URIS = 0; # for testing only
 
 sub _initialize {
