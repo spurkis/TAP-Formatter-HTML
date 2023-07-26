@@ -6,3 +6,4 @@ README
 _build/
 blib/
 *.swp
+TAP-Formatter-HTML-*.*.tar.gz
