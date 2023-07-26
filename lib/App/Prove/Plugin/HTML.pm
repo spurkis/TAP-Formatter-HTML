@@ -7,7 +7,7 @@ App::Prove::Plugin::HTML - a prove plugin for HTML output
 =head1 SYNOPSIS
 
  # command-line usage:
- prove -P HTML=outfile:out.html,css_uri:style.css,js_uri:foo.js,force_inline_css:0
+ prove -m -P HTML=outfile:out.html,css_uri:style.css,js_uri:foo.js,force_inline_css:0
 
  # NOTE: this is currently in alpha, this usage will likely change!
 
