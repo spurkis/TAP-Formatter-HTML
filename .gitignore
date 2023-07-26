@@ -7,3 +7,4 @@ _build/
 blib/
 *.swp
 TAP-Formatter-HTML-*.*.tar.gz
+TAP-Formatter-HTML-*.*/
