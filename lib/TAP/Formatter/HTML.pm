@@ -384,9 +384,8 @@ sub prepare_report {
     }
 
     # do some other handy calcs:
-    $r->{actual_passed} = $r->{passed} + $r->{todo_passed};
     if ($r->{total}) {
-	$r->{percent_passed} = sprintf('%.1f', $r->{actual_passed} / $r->{total} * 100);
+	$r->{percent_passed} = sprintf('%.1f', $r->{passed} / $r->{total} * 100);
     } else {
 	$r->{percent_passed} = 0;
     }
