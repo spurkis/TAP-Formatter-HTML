@@ -10,6 +10,7 @@ All changes by Steve Purkis, unless otherwise noted.
         RT#91317:  synopsis of main module and plugin (Slaven Rezić)
         RT#89216:  typo fix (dsteinbrunner)
         GH#2:      gitignore (Gábor Szabó)
+        GH#4:      fix double include of css and javascript (Christopher Rasch-Olsen Raa)
 
 0.11
     +	fixed RT #81922: tests no longer hang on Win32.  Didn't get to the bottom
