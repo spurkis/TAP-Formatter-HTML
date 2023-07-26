@@ -870,7 +870,7 @@ Unix.  So if you're running under Win32, C<TAP::Formatter::HTML> will look for
 a signature C<'X:\'>, C<'\'> or C<'file:'> at the start of each URI to see if
 you are referring to a file or another type of URI.
 
-Note that you must use 'C<file:///C:\blah>' with I<3 slashes> otherwie 'C<C:>'
+Note that you must use 'C<file:///C:\blah>' with I<3 slashes> otherwise 'C<C:>'
 will become your I<host>, which is probably not what you want.  See
 L<URI::file> for more details.
 
